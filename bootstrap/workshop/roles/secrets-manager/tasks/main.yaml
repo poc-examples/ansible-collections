@@ -1,0 +1,103 @@
+---
+
+- name: Secrets Manager - Ensure Secrets Manager Namespace
+  kubernetes.core.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "secrets-manager"
+
+- name: Secrets Manager - Create Service Account for Secrets Access
+  kubernetes.core.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: external-secrets-kubeaccess-sa
+        namespace: secrets-manager
+
+- name: Secrets Manager - RBAC for Service Account
+  kubernetes.core.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: secrets-access
+        namespace: secrets-manager
+      rules:
+        - apiGroups:
+            - ""
+          resources:
+            - "secrets"
+          verbs:
+            - "get"
+            - "list"
+            - "watch"
+        - apiGroups:
+            - authorization.k8s.io
+          resources:
+            - selfsubjectrulesreviews
+          verbs:
+            - create
+
+- name: Secrets Manager - RBAC Binding for Service Account
+  kubernetes.core.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: secrets-access-binding
+        namespace: secrets-manager
+      subjects:
+        - kind: ServiceAccount
+          name: external-secrets-kubeaccess-sa
+          namespace: secrets-manager
+      roleRef:
+        kind: Role
+        name: secrets-access
+        apiGroup: rbac.authorization.k8s.io
+
+- name: Secrets Manager - Create Admin Vault Credentials
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: vault-token
+        namespace: "secrets-manager"
+      stringData:
+        token: "{{ secrets.vault.token | default('root', true) }}"
+  when:
+    - secrets.vault.enabled is defined
+    - secrets.vault.enabled is true
+
+- name: Secrets Manager - Create Secrets
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ item.name }}-priming-secrets"
+        namespace: "secrets-manager"
+      stringData: "{{ item.secrets }}"
+  loop: "{{ secrets.pushSecrets }}"
+  no_log: true

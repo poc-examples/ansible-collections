@@ -1,0 +1,102 @@
+---
+- name: OpenShift GitOps - Enable Kustomization Helm Patch
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: argoproj.io/v1beta1
+      kind: ArgoCD
+      metadata:
+        name: "{{ gitops.namespace }}"
+        namespace: "{{ gitops.namespace }}"
+      spec:
+        extraConfig:
+          resource.customizations: |
+            argoproj.io/Application:
+              health.lua: |
+                hs = {}
+                hs.status = "Progressing"
+                hs.message = ""
+                if obj.status ~= nil then
+                  if obj.status.health ~= nil then
+                    hs.status = obj.status.health.status
+                    if obj.status.health.message ~= nil then
+                      hs.message = obj.status.health.message
+                    end
+                  end
+                end
+                return hs
+        controller:
+          # Less resource requirements on controller
+          diff:
+            server:
+              side: "true"
+          app:
+            state:
+              cache:
+                expiration: "2m0s"
+          repo:
+            server:
+              timeout:
+                seconds: "180"
+          status:
+            processors: "60"
+          operation:
+            processors: "30"
+          # Infinite Retries
+          k8sclient:
+            retry:
+              max: "-1"
+          kubectl:
+            parallelism:
+              limit: "30"
+        server:
+          route:
+            enabled: true
+          insecure: true
+        kustomizeBuildOptions: '--enable-helm'
+
+- name: GitOps - Create Workshop
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: "{{ workshop.chart.name }}-workshop"
+        namespace: "{{ gitops.namespace }}"
+      spec:
+        destination:
+          namespace: "{{ gitops.namespace }}"
+          server: 'https://kubernetes.default.svc'
+        source:
+          chart: "{{ workshop.chart.name }}"
+          repoURL: "{{ workshop.chart.repo }}"
+          version: v3
+          targetRevision: "{{ workshop.chart.version }}"
+          helm:
+            parameters:
+              - name: domain
+                value: "{{ domain }}"
+            valuesObject: null
+        project: default
+        timeout: 120
+        syncPolicy:
+          retry:
+            limit: 10
+            backoff:
+              duration: 5s
+              factor: 2
+              maxDuration: 30s
+          automated:
+            prune: false
+            selfHeal: true
+          managedNamespaceMetadata:
+            labels:
+              argocd.argoproj.io/managed-by: "{{ gitops.namespace }}"
+          syncOptions:
+            - CreateNamespace=false
+            - Validate=false
