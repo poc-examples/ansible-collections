@@ -2,6 +2,7 @@
 - name: OpenShift GitOps - Enable Kustomization Helm Patch
   community.okd.k8s:
     host: "{{ api_url }}"
+    api_key: "{{ token }}"
     validate_certs: "{{ validate_certs }}"
     definition:
       apiVersion: argoproj.io/v1beta1
@@ -59,6 +60,7 @@
 - name: GitOps - Create Workshop
   community.okd.k8s:
     host: "{{ api_url }}"
+    api_key: "{{ token }}"
     validate_certs: "{{ validate_certs }}"
     definition:
       apiVersion: argoproj.io/v1alpha1
