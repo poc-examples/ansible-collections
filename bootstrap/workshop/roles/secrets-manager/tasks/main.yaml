@@ -70,6 +70,10 @@
         name: secrets-access
         apiGroup: rbac.authorization.k8s.io
 
+- name: Set Vault Token
+  set_fact:
+    vault_token: "{{ secrets.vault.token | default('root') }}"
+
 - name: Secrets Manager - Create Admin Vault Credentials
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -82,7 +86,7 @@
         name: vault-token
         namespace: "secrets-manager"
       stringData:
-        token: "{{ (secrets.vault.token if (secrets.vault is defined and 'token' in secrets.vault) else 'root') }}"
+        token: "{{ vault_token }}"
   when:
     - secrets.vault.enabled is defined
     - secrets.vault.enabled is true
