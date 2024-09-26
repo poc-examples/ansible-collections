@@ -82,7 +82,7 @@
         name: vault-token
         namespace: "secrets-manager"
       stringData:
-        token: "{{ secrets.vault.token | default('root', true) }}"
+        token: "{{ (secrets.vault.token if (secrets.vault is defined and 'token' in secrets.vault) else 'root') }}"
   when:
     - secrets.vault.enabled is defined
     - secrets.vault.enabled is true
