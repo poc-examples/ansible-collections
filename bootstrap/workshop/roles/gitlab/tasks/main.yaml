@@ -305,9 +305,12 @@
 
 - name: Prepare ConfigMap data
   set_fact:
-    configmap_data:
-      "gitlab.{{ domain }}": |
+    configmap_data: |
+      gitlab.{{ domain }}: |
         {{ cfssl_ca }}
+
+- debug:
+    msg: "{{ configmap_data }}"
 
 - name: Patch ArgoCD TLS ConfigMap
   community.kubernetes.k8s:
