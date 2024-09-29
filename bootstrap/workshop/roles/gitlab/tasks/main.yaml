@@ -309,10 +309,6 @@
       gitlab.{{ domain }}: |
         {{ cfssl_ca }}
 
-- name: Convert to YAML
-  set_fact:
-    configmap_data_yaml: "{{ configmap_data | from_yaml }}"
-
 - name: Patch ArgoCD TLS ConfigMap
   community.kubernetes.k8s:
     host: "{{ api_url }}"
@@ -324,7 +320,7 @@
       metadata:
         name: argocd-tls-certs-cm
         namespace: openshift-gitops
-      data: "{{ configmap_data_yaml }}"
+      data: "{{ configmap_data }}"
     merge_type:
       - merge
   register: patch_result
