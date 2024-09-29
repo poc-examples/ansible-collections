@@ -315,7 +315,7 @@
         name: argocd-tls-certs-cm
         namespace: openshift-gitops
       data:
-        "{{ domain }}": "{{ cfssl_ca }}"
+        {{ domain | quote }}: "{{ cfssl_ca }}"
     merge_type:
       - merge
   register: patch_result
