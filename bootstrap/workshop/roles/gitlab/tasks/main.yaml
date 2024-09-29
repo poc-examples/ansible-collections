@@ -283,42 +283,44 @@
                 property: "group_access_token"
 
 
-# # GITLAB CREATES IS OWN CERT WHILE YOU COULD TECHNICALLY 
-# # GENERATE YOUR OWN WILDCARD CERT UPDATE ARGOCD AND USE IT
-# # FOR GITLAB... THIS SHOWS HOW TO FETCH ONE AND PATCH THE ARGOCD-TLS SETTINGS
-# - name: Get GitLab Wildcard TLS CA Secret
-#   community.kubernetes.k8s_info:
-#     host: "{{ api_url }}"
-#     api_key: "{{ token }}"
-#     validate_certs: "{{ validate_certs }}"
-#     api_version: v1
-#     kind: Secret
-#     name: "gitlab-wildcard-tls-ca"
-#     namespace: "gitlab-system"
-#   register: gitlab_tls_secret
+# GITLAB CREATES IS OWN CERT WHILE YOU COULD TECHNICALLY 
+# GENERATE YOUR OWN WILDCARD CERT UPDATE ARGOCD AND USE IT
+# FOR GITLAB... THIS SHOWS HOW TO FETCH ONE AND PATCH THE ARGOCD-TLS SETTINGS
 
-# - name: Decode cfssl_ca from the Secret
-#   set_fact:
-#     cfssl_ca: "{{ gitlab_tls_secret.resources[0].data.cfssl_ca | b64decode }}"
+# OTHER OPTIONS MIGHT BE TO USE KYVERNO
+- name: Get GitLab Wildcard TLS CA Secret
+  community.kubernetes.k8s_info:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    api_version: v1
+    kind: Secret
+    name: "gitlab-wildcard-tls-ca"
+    namespace: "gitlab-system"
+  register: gitlab_tls_secret
 
-# - name: Patch ArgoCD TLS ConfigMap
-#   community.kubernetes.k8s:
-#     host: "{{ api_url }}"
-#     api_key: "{{ token }}"
-#     validate_certs: "{{ validate_certs }}"
-#     definition:
-#       apiVersion: v1
-#       kind: ConfigMap
-#       metadata:
-#         name: argocd-tls-certs-cm
-#         namespace: openshift-gitops
-#       data:
-#         "{{ domain }}": |
-#           "{{ cfssl_ca }}"
-#     merge_type:
-#       - merge
-#   register: patch_result
+- name: Decode cfssl_ca from the Secret
+  set_fact:
+    cfssl_ca: "{{ gitlab_tls_secret.resources[0].data.cfssl_ca | b64decode }}"
 
-# - name: Debug Patch Result
-#   debug:
-#     msg: "ConfigMap patched successfully: {{ patch_result }}"
+- name: Patch ArgoCD TLS ConfigMap
+  community.kubernetes.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: argocd-tls-certs-cm
+        namespace: openshift-gitops
+      data:
+        "{{ domain }}": |
+          "{{ cfssl_ca }}"
+    merge_type:
+      - merge
+  register: patch_result
+
+- name: Debug Patch Result
+  debug:
+    msg: "ConfigMap patched successfully: {{ patch_result }}"
