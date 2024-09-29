@@ -305,8 +305,8 @@
 
 - name: Prepare ConfigMap data
   set_fact:
-    configmap_data: |
-      gitlab.{{ domain }}: |
+    configmap_data:
+      "gitlab.{{ domain }}": |
         {{ cfssl_ca }}
 
 - name: Patch ArgoCD TLS ConfigMap
