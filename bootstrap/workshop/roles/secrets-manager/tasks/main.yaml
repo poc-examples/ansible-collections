@@ -100,7 +100,7 @@
       apiVersion: v1
       kind: Secret
       metadata:
-        name: "{{ item.name }}-priming-secrets"
+        name: "{{ item.name }}"
         namespace: "secrets-manager"
       stringData: "{{ item.secrets }}"
   loop: "{{ secrets.pushSecrets }}"
