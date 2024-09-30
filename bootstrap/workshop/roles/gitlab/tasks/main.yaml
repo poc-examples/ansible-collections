@@ -323,7 +323,8 @@
       metadata:
         name: argocd-tls-certs-cm
         namespace: openshift-gitops
-      data: "{{ configmap_data }}"
+      data: 
+        "{{ configmap_data | to_nice_yaml }}"
     merge_type:
       - merge
   register: patch_result
