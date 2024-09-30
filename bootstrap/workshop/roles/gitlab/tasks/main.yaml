@@ -310,7 +310,7 @@
         {{ cfssl_ca }}
 
 - debug:
-    msg: "{{ configmap_data }}"
+    msg: "{{ configmap_data | to_nice_yaml }}"
 
 - name: Patch ArgoCD TLS ConfigMap
   community.kubernetes.k8s:
