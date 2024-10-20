@@ -17,7 +17,7 @@
     csv_installplans: "{{ pending_installplans | selectattr('spec.clusterServiceVersionNames', 'contains', csv_name) | list }}"
 
 - name: "Approve pending InstallPlans for {{ csv_name }}"
-  kubernetes.core..k8s:
+  kubernetes.core.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
     validate_certs: "{{ validate_certs }}"
