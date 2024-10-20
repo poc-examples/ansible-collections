@@ -8,6 +8,9 @@
     namespace: "{{ namespace }}"
   register: installplans
 
+- debug:
+    install_plan: "{{ installplans.resources }}"
+
 - name: "Filter InstallPlans waiting for approval"
   set_fact:
     pending_installplans: "{{ installplans.resources | selectattr('status.approved', 'equalto', false) | list }}"
