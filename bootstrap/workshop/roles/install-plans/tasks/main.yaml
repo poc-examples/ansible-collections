@@ -1,5 +1,5 @@
 - name: "List all InstallPlans in the namespace"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
     validate_certs: "{{ validate_certs }}"
@@ -17,7 +17,7 @@
     csv_installplans: "{{ pending_installplans | selectattr('spec.clusterServiceVersionNames', 'contains', csv_name) | list }}"
 
 - name: "Approve pending InstallPlans for {{ csv_name }}"
-  community.kubernetes.k8s:
+  kubernetes.core..k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
     validate_certs: "{{ validate_certs }}"
