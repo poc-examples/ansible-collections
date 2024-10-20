@@ -1,4 +1,3 @@
----
 - name: "List all InstallPlans in the namespace"
   community.kubernetes.k8s_info:
     host: "{{ api_url }}"
