@@ -11,35 +11,35 @@
 - debug:
     install_plan: "{{ installplans.resources }}"
 
-- name: "Filter InstallPlans waiting for approval"
-  set_fact:
-    pending_installplans: "{{ installplans.resources | selectattr('status.approved', 'equalto', false) | list }}"
+# - name: "Filter InstallPlans waiting for approval"
+#   set_fact:
+#     pending_installplans: "{{ installplans.resources | selectattr('status.approved', 'equalto', false) | list }}"
 
-- name: "Find InstallPlans associated with specific CSV"
-  set_fact:
-    csv_installplans: "{{ pending_installplans | selectattr('spec.clusterServiceVersionNames', 'contains', csv_name) | list }}"
+# - name: "Find InstallPlans associated with specific CSV"
+#   set_fact:
+#     csv_installplans: "{{ pending_installplans | selectattr('spec.clusterServiceVersionNames', 'contains', csv_name) | list }}"
 
-- name: "Approve pending InstallPlans for {{ csv_name }}"
-  kubernetes.core.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    api_version: operators.coreos.com/v1alpha1
-    kind: InstallPlan
-    name: "{{ item.metadata.name }}"
-    namespace: "{{ namespace }}"
-    definition:
-      spec:
-        approved: true
-  loop: "{{ csv_installplans }}"
-  when: csv_installplans | length > 0
-  with_items: "{{ csv_installplans }}"
-  loop_control:
-    label: "{{ item.metadata.name }}"
-  register: approval_result
+# - name: "Approve pending InstallPlans for {{ csv_name }}"
+#   kubernetes.core.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     api_version: operators.coreos.com/v1alpha1
+#     kind: InstallPlan
+#     name: "{{ item.metadata.name }}"
+#     namespace: "{{ namespace }}"
+#     definition:
+#       spec:
+#         approved: true
+#   loop: "{{ csv_installplans }}"
+#   when: csv_installplans | length > 0
+#   with_items: "{{ csv_installplans }}"
+#   loop_control:
+#     label: "{{ item.metadata.name }}"
+#   register: approval_result
 
-- name: "Show the result of the InstallPlan approval"
-  debug:
-    msg: "Approved InstallPlan: {{ item.metadata.name }}"
-  loop: "{{ approval_result.results }}"
-  when: item | changed
+# - name: "Show the result of the InstallPlan approval"
+#   debug:
+#     msg: "Approved InstallPlan: {{ item.metadata.name }}"
+#   loop: "{{ approval_result.results }}"
+#   when: item | changed
