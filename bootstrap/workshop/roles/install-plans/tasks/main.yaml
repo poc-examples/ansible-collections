@@ -25,24 +25,24 @@
 - debug:
     msg: "{{ csv_installplans }}"
 
-# - name: "Approve pending InstallPlans for {{ csv_name }}"
-#   kubernetes.core.k8s:
-#     host: "{{ api_url }}"
-#     api_key: "{{ token }}"
-#     validate_certs: "{{ validate_certs }}"
-#     api_version: operators.coreos.com/v1alpha1
-#     kind: InstallPlan
-#     name: "{{ item.metadata.name }}"
-#     namespace: "{{ namespace }}"
-#     definition:
-#       spec:
-#         approved: true
-#   loop: "{{ csv_installplans }}"
-#   when: csv_installplans | length > 0
-#   with_items: "{{ csv_installplans }}"
-#   loop_control:
-#     label: "{{ item.metadata.name }}"
-#   register: approval_result
+- name: "Approve pending InstallPlans for {{ csv_name }}"
+  kubernetes.core.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    api_version: operators.coreos.com/v1alpha1
+    kind: InstallPlan
+    name: "{{ item.metadata.name }}"
+    namespace: "{{ namespace }}"
+    definition:
+      spec:
+        approved: true
+  loop: "{{ csv_installplans }}"
+  when: 
+    - csv_installplans | length > 0
+  loop_control:
+    label: "{{ item.metadata.name }}"
+  register: approval_result
 
 # - name: "Show the result of the InstallPlan approval"
 #   debug:
