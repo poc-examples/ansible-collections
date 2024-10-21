@@ -94,9 +94,9 @@
             operators.coreos.com/Subscription:
               health.lua: |
                 hs = {}
-                if obj.status ~= nil and obj.status.state == "UpgradePending" then
+                if obj.status ~= nil and (obj.status.state == "UpgradePending" or obj.status.state == "AtLatestKnown") then
                   hs.status = "Healthy"
-                  hs.message = "Upgrade is pending, but manual approval is required."
+                  hs.message = "Subscription is either at the latest known version or pending upgrade approval."
                 else
                   hs.status = "Progressing"
                   hs.message = "Unknown subscription state or upgrade in progress."
