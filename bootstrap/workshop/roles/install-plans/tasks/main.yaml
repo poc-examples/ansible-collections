@@ -8,12 +8,12 @@
     namespace: "{{ namespace }}"
   register: installplans
 
-- debug:
-    msg: "{{ installplans.resources }}"
+- name: "Filter InstallPlans waiting for approval"
+  set_fact:
+    pending_installplans: "{{ installplans.resources | selectattr('status.approved', 'equalto', false) | list }}"
 
-# - name: "Filter InstallPlans waiting for approval"
-#   set_fact:
-#     pending_installplans: "{{ installplans.resources | selectattr('status.approved', 'equalto', false) | list }}"
+- debug:
+    msg: "{{ pending_installplans }}"
 
 # - name: "Find InstallPlans associated with specific CSV"
 #   set_fact:
