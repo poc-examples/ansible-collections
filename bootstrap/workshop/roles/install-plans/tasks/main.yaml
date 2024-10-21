@@ -7,6 +7,10 @@
     kind: InstallPlan
     namespace: "{{ namespace }}"
   register: installplans
+  until:
+    - installplans.resources | length > 0
+  retries: 40
+  delay: 30
 
 - debug:
     msg: "{{ installplans.resources }}"
@@ -43,9 +47,3 @@
   loop_control:
     label: "{{ item.metadata.name }}"
   register: approval_result
-
-# - name: "Show the result of the InstallPlan approval"
-#   debug:
-#     msg: "Approved InstallPlan: {{ item.metadata.name }}"
-#   loop: "{{ approval_result.results }}"
-#   when: item | changed
