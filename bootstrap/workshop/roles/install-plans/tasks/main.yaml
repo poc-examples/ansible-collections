@@ -13,7 +13,7 @@
 
 - name: "Filter InstallPlans waiting for approval"
   set_fact:
-    pending_installplans: "{{ installplans.resources | selectattr('status.approved', 'equalto', false) | list }}"
+    pending_installplans: "{{ installplans.resources | selectattr('spec.approved', 'equalto', false) | list }}"
 
 - debug:
     msg: "{{ pending_installplans }}"
