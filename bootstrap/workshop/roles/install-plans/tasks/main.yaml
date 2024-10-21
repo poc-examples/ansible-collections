@@ -9,7 +9,7 @@
   register: installplans
 
 - debug:
-    install_plan: "{{ installplans.resources }}"
+    msg: "{{ installplans.resources }}"
 
 # - name: "Filter InstallPlans waiting for approval"
 #   set_fact:
