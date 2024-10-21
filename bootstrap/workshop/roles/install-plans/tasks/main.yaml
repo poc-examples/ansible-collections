@@ -18,9 +18,12 @@
 - debug:
     msg: "{{ pending_installplans }}"
 
-# - name: "Find InstallPlans associated with specific CSV"
-#   set_fact:
-#     csv_installplans: "{{ pending_installplans | selectattr('spec.clusterServiceVersionNames', 'contains', csv_name) | list }}"
+- name: "Find InstallPlans associated with specific CSV"
+  set_fact:
+    csv_installplans: "{{ pending_installplans | selectattr('spec.clusterServiceVersionNames', 'contains', csv_name) | list }}"
+
+- debug:
+    msg: "{{ csv_installplans }}"
 
 # - name: "Approve pending InstallPlans for {{ csv_name }}"
 #   kubernetes.core.k8s:
