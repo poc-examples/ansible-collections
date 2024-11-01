@@ -154,9 +154,6 @@
           version: v3
           targetRevision: "{{ workshop.chart.version }}"
           helm:
-            parameters:
-              - name: domain
-                value: "{{ domain }}"
             valuesObject: null
         project: default
         timeout: 120
@@ -194,7 +191,7 @@
         labels:
           argocd.argoproj.io/secret-type: cluster
           cluster: default
-          domain: "{{ domain }}"
+          domain: "apps.{{ domain }}"
       stringData:
         config: '{"tlsClientConfig":{"insecure":false}}'
         name: "default"
