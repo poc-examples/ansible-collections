@@ -1,5 +1,5 @@
 ---
-#test
+
 - name: OpenShift GitOps - Ensure GitOps Namespace
   kubernetes.core.k8s:
     host: "{{ api_url }}"
@@ -126,6 +126,7 @@
           kubectl:
             parallelism:
               limit: "30"
+        applicationSet: {}
         server:
           route:
             enabled: true
@@ -178,3 +179,24 @@
   when:
     - workshop.chart.enabled is defined
     - workshop.chart.enabled is true
+
+- name: GitOps - Cluster Generator Secrets
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "default-cluster"
+        namespace: "openshift-gitops"
+        labels:
+          argocd.argoproj.io/secret-type: cluster
+          cluster: default
+          domain: "{{ domain }}"
+      stringData:
+        config: '{"tlsClientConfig":{"insecure":false}}'
+        name: "default"
+        nameNormalized: "default"
+        server: "https://kubernetes.default.svc"
