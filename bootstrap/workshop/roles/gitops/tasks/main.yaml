@@ -1,5 +1,3 @@
----
-
 - name: OpenShift GitOps - Ensure GitOps Namespace
   kubernetes.core.k8s:
     host: "{{ api_url }}"
@@ -100,6 +98,17 @@
                 else
                   hs.status = "Progressing"
                   hs.message = "Unknown subscription state or upgrade in progress."
+                end
+                return hs
+            batch/v1:
+              health.lua: |
+                hs = {}
+                if obj.status ~= nil and (obj.status.succeeded > 0) then
+                  hs.status = "Healthy"
+                  hs.message = "Batch job has succeeded without errors"
+                else 
+                  hs.status = "Progressing"
+                  hs.message = "Batch job still needs to run or has errors"
                 end
                 return hs
         controller:
