@@ -116,12 +116,26 @@
                 end
                 return hs
 
+            external-secrets.io/ExternalSecret:
+              health.lua: |
+                hs = {}
+                hs.status = "Progressing"
+                hs.message = "ExternalSecret is still syncing or not yet ready"
+                if obj.status ~= nil and obj.status.conditions ~= nil then
+                  for i, condition in ipairs(obj.status.conditions) do
+                    if condition.type == "Ready" and condition.status == "True" then
+                      hs.status = "Healthy"
+                      hs.message = "ExternalSecret has been synced successfully"
+                    end
+                  end
+                end
+                return hs
+
             external-secrets.io/PushSecret:
               health.lua: |
                 hs = {}
                 hs.status = "Progressing"
                 hs.message = "PushSecret is not yet synced or still in progress"
-                
                 if obj.status ~= nil and obj.status.conditions ~= nil then
                   for i, condition in ipairs(obj.status.conditions) do
                     if condition.type == "Ready" and condition.status == "True" then
@@ -131,7 +145,17 @@
                     end
                   end
                 end
-                
+                return hs
+
+            apps.gitlab.com/GitLab:
+              health.lua: |
+                hs = {}
+                hs.status = "Progressing"
+                hs.message = "GitLab is not yet fully running or still initializing"
+                if obj.status ~= nil and obj.status.phase == "Running" then
+                  hs.status = "Healthy"
+                  hs.message = "GitLab is running and available to accept requests"
+                end
                 return hs
 
         controller:
