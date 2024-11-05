@@ -207,7 +207,9 @@
           kubectl:
             parallelism:
               limit: "30"
-        applicationSet: {}
+        applicationSet:
+          extraCommandArgs:
+            - "--enable-progressive-syncs"
         server:
           route:
             enabled: true
