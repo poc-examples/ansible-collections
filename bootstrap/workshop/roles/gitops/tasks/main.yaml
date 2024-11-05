@@ -90,6 +90,27 @@
                 end
                 return hs
 
+            argoproj.io/ApplicationSet:
+              health.lua: |
+                hs = {}
+                hs.status = "Progressing"
+                hs.message = "Waiting for all child applications to be healthy"
+                if obj.status ~= nil and obj.status.resources ~= nil then
+                  local allHealthy = true
+                  for i, resource in ipairs(obj.status.resources) do
+                    if resource.kind == "Application" and (resource.health == nil or resource.health.status ~= "Healthy" or resource.status ~= "Synced") then
+                      allHealthy = false
+                      hs.message = "Application " .. resource.name .. " is not healthy or not synced"
+                      break
+                    end
+                  end
+                  if allHealthy then
+                    hs.status = "Healthy"
+                    hs.message = "All child applications are healthy and synced"
+                  end
+                end
+                return hs
+
             operators.coreos.com/Subscription:
               health.lua: |
                 hs = {}
