@@ -1,0 +1,47 @@
+- name: OpenShift GitOps - Ensure GitOps Namespace
+  kubernetes.core.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ gitops.namespace }}"
+
+- name: OpenShift GitOps - Ensure GitOps Subscription
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: "{{ gitops.namespace }}"
+        namespace: "openshift-operators"
+      spec:
+        channel: "{{ gitops.channel }}"
+        installPlanApproval: Automatic
+        name: "openshift-gitops-operator"
+        source: redhat-operators
+        sourceNamespace: openshift-marketplace
+
+- name: OpenShift GitOps - Ensure Admin RBAC
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: "{{ gitops.namespace }}-cluster-admin-binding"
+      subjects:
+        - kind: ServiceAccount
+          name: "{{ gitops.namespace }}-argocd-application-controller"
+          namespace: "{{ gitops.namespace }}"
+      roleRef:
+        kind: ClusterRole
+        name: cluster-admin
+        apiGroup: rbac.authorization.k8s.io
