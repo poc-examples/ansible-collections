@@ -105,3 +105,19 @@
       stringData: "{{ item.secrets }}"
   loop: "{{ secrets.pushSecrets }}"
   no_log: true
+
+- name: Secrets Manager - Create Admin Vault Credentials
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: rosa-token
+        namespace: "secrets-manager"
+      stringData:
+        token: "{{ rosa_token }}"
+  when:
+    - rosa_token is defined
