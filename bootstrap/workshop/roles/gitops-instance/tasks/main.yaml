@@ -188,7 +188,11 @@
         namespace: "openshift-gitops"
         labels:
           argocd.argoproj.io/secret-type: cluster
+          type: "{{ cluster.type }}"
           cluster: default
+          cluster_name: "{{ cluster.cluster_name }}"
+          version: "{{ cluster.version }}"
+          region: "{{ cluster.region }}"
           domain: "apps.{{ domain }}"
       stringData:
         config: '{"tlsClientConfig":{"insecure":false}}'
