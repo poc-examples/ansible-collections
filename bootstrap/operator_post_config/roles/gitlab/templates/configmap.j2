@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-tls-certs-cm
+  namespace: openshift-gitops
+data:
+  gitlab.{{ domain }}: |
+    {{ cfssl_ca | indent(4) }}

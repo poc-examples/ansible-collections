@@ -1,0 +1,22 @@
+namespace: bootstrap
+name: post_operator_configuration
+
+version: 0.1.0
+readme: README.md
+
+authors:
+  - Christopher Engleby <cengleby@redhat.com>
+
+description: A Collection used to bootstrap post operator configurations.
+
+license:
+  - MIT
+
+tags: []
+
+dependencies: {}
+
+repository: https://github.com/poc-examples/ansible-collections
+documentation: http://docs.example.com
+homepage: http://example.com
+issues: http://example.com/issue/tracker
