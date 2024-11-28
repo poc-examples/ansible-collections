@@ -16,7 +16,7 @@
   command: rosa login --token={{ config.cluster.rosa_token }}
   register: rosa_login_output
 - debug:
-    msg: "{{ rosa_login_output.json }}"
+    msg: "{{ rosa_login_output }}"
 
 # - name: Check if Identity Provider exists
 #   command: rosa list idps --cluster={{ cluster_name }}
