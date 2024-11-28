@@ -29,7 +29,8 @@
   command: |
     rosa list idps \
       --cluster={{ config.cluster.cluster_name }} \
-      --region={{ config.cluster.region }}
+      --region={{ config.cluster.region }} \
+      -o json
   register: rosa_idps
 - debug:
     msg: "ROSA IDPs: {{ rosa_idps.stdout }}"
