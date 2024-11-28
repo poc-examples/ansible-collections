@@ -11,13 +11,15 @@
         client_id: "{{ lookup('env', 'CLIENT_ID') }}"
         client_secret: "{{ lookup('env', 'CLIENT_SECRET') }}"
       idp:
+        username: "{{ lookup('env', 'ADMIN_USERNAME') }}"
+        password: "{{ lookup('env', 'ADMIN_PASSWORD') }}"
         issuer_url: https://keycloak-keycloak.{{ domain }}/auth/realms/{{ lookup('env', 'CLIENT_ID') }}
 # - debug:
 #     msg: "{{ config.cluster.rosa_token }}"
 
 - name: Log ROSA Version
   command: rosa version
-  register: rosa_version
+  register: rosa_versionW
 - debug:
     msg: "{{ rosa_version }}"
 
@@ -66,7 +68,14 @@
     - debug:
         msg: "idp does not exist"
 
-# - name: Skip adding IDP if it already exists
-#   when: rosa_idps.stdout.find(idp_name) != -1
-#   debug:
-#     msg: "Identity provider {{ idp_name }} already exists. Skipping addition."
+- name: Create a Keycloak group, authentication with credentials
+  community.general.keycloak_group:
+    name: cluster-admins
+    realm: "{{ config.client.client_id }}"
+    auth_client_id: "{{ config.client.client_id }}"
+    auth_keycloak_url: https://keycloak-keycloak.{{ domain }}/auth/admin
+    auth_realm: master
+    auth_username: "{{ config.idp.username }}"
+    auth_password: "{{ config.idp.password }}"
+  register: group
+  # delegate_to: localhost
