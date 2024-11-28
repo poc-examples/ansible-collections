@@ -1,11 +1,22 @@
-- debug:
-    msg: "{{ lookup('env', 'ROSA_TOKEN') }}"
+- name: Format Configuration Variables
+  set_fact:
+    config:
+      cluster:
+        rosa_token: "{{ lookup('env', 'ROSA_TOKEN') }}"
+        aws_access_key_id: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        aws_secret_access_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+      client:
+        client_id: "{{ lookup('env', 'CLIENT_ID') }}"
+        client_secret: "{{ lookup('env', 'CLIENT_SECRET') }}"
 
-# - name: Login to ROSA
-#   command: rosa login --token={{ rosa_token }}
-#   register: rosa_login_output
 # - debug:
-#     msg: "{{ login.json }}"
+#     msg: "{{ config.cluster.rosa_token }}"
+
+- name: Login to ROSA
+  command: rosa login --token={{ config.cluster.rosa_token }}
+  register: rosa_login_output
+- debug:
+    msg: "{{ rosa_login_output.json }}"
 
 # - name: Check if Identity Provider exists
 #   command: rosa list idps --cluster={{ cluster_name }}
