@@ -26,7 +26,10 @@
     msg: "{{ rosa_login_output.stdout }}"
 
 - name: Check if Identity Provider exists
-  command: rosa list idps --cluster={{ config.cluster.cluster_name }}
+  command: |
+    rosa list idps \
+      --cluster={{ config.cluster.cluster_name }} \
+      --region={{ config.cluster.region }}
   register: rosa_idps
 - debug:
     msg: "ROSA IDPs: {{ rosa_idps.stdout }}"
