@@ -10,6 +10,8 @@
       client:
         client_id: "{{ lookup('env', 'CLIENT_ID') }}"
         client_secret: "{{ lookup('env', 'CLIENT_SECRET') }}"
+      idp:
+        issuer_url: https://keycloak-keycloak.{{ domain }}/auth/realms/{{ config.client.client_id }}
 # - debug:
 #     msg: "{{ config.cluster.rosa_token }}"
 
@@ -35,8 +37,8 @@
 - name: Set IDP Facts
   set_fact:
     idp: "{{ rosa_idps.stdout | from_json }}"
-- debug:
-    msg: "{{ idp }}"
+# - debug:
+#     msg: "{{ idp }}"
 
 - debug:
     msg: "idp does exists"
@@ -45,22 +47,22 @@
 - name: Add Identity Provider if not exists
   when: idp | selectattr('name', 'equalto', config.client.client_id) | list | length < 1
   block:
-    # - name: Add ROSA Identity Provider
-    #   command: >
-    #     rosa create idp
-    #     --cluster={{ cluster_name }}
-    #     --name={{ idp_name }}
-    #     --type="openid"
-    #     --client-id={{ client_id }}
-    #     --client-secret={{ client_secret }}
-    #     --issuer-url={{ issuer_url }}
-    #     --mapping-method="claim"
-    #     --email-claims="email"
-    #     --name-claims="name"
-    #     --groups-claims="groups"
-    #     --username-claims="preferred_username"
-    #     --region={{ region }}
-    #   register: add_idp_output
+    - name: Add ROSA Identity Provider
+      command: >
+        rosa create idp
+        --cluster={{ config.cluster.cluster_name }}
+        --name={{ config.client.client_id }}
+        --type="openid"
+        --client-id={{ config.client.client_id }}
+        --client-secret={{ config.client.client_secret }}
+        --issuer-url={{ config.idp.issuer_url }}
+        --mapping-method="claim"
+        --email-claims="email"
+        --name-claims="name"
+        --groups-claims="groups"
+        --username-claims="preferred_username"
+        --region={{ config.cluster.region }}
+      register: add_idp_output
     - debug:
         msg: "idp does not exist"
 
