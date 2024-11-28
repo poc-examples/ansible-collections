@@ -2,27 +2,34 @@
   set_fact:
     config:
       cluster:
+        cluster_name: "{{ cluster_name }}"
+        region: "{{ region }}"
         rosa_token: "{{ lookup('env', 'ROSA_TOKEN') }}"
         aws_access_key_id: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
         aws_secret_access_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
       client:
         client_id: "{{ lookup('env', 'CLIENT_ID') }}"
         client_secret: "{{ lookup('env', 'CLIENT_SECRET') }}"
-
 # - debug:
 #     msg: "{{ config.cluster.rosa_token }}"
+
+- name: Log ROSA Version
+  command: rosa version
+  register: rosa_version
+- debug:
+    msg: "{{ rosa_version }}"
 
 - name: Login to ROSA
   command: rosa login --token={{ config.cluster.rosa_token }}
   register: rosa_login_output
 - debug:
-    msg: "{{ rosa_login_output }}"
+    msg: "{{ rosa_login_output.stdout }}"
 
-# - name: Check if Identity Provider exists
-#   command: rosa list idps --cluster={{ cluster_name }}
-#   register: rosa_idps
-# - debug:
-#     msg: "ROSA IDPs: {{ rosa_idps.stdout }}"
+- name: Check if Identity Provider exists
+  command: rosa list idps --cluster={{ config.cluster.cluster_name }}
+  register: rosa_idps
+- debug:
+    msg: "ROSA IDPs: {{ rosa_idps.stdout }}"
 
 # - name: Add Identity Provider if not exists
 #   when: rosa_idps.stdout.find(idp_name) == -1
