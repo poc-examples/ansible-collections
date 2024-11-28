@@ -1,9 +1,5 @@
-- name: Verify ROSA CLI version
-  command: rosa version
-  register: rosa_version_output
-  ignore_errors: true
 - debug:
-    msg: "{{ rosa_version_output.stdout }}"
+    msg: "{{ rosa_token }}"
 
 # - name: Login to ROSA
 #   command: rosa login --token={{ rosa_token }}
