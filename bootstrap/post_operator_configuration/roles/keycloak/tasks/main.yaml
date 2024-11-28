@@ -1,5 +1,5 @@
 - debug:
-    msg: "{{ rosa_token }}"
+    msg: "{{ lookup('env', 'ROSA_TOKEN') }}"
 
 # - name: Login to ROSA
 #   command: rosa login --token={{ rosa_token }}
