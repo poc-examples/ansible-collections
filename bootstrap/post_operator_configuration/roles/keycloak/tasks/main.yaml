@@ -33,7 +33,7 @@
       -o json
   register: rosa_idps
 - debug:
-    msg: "ROSA IDPs: {{ rosa_idps.stdout }}"
+    msg: "{{ rosa_idps }}"
 
 # - name: Add Identity Provider if not exists
 #   when: rosa_idps.stdout.find(idp_name) == -1
