@@ -19,7 +19,7 @@
 
 - name: Log ROSA Version
   command: rosa version
-  register: rosa_versionW
+  register: rosa_version
 - debug:
     msg: "{{ rosa_version }}"
 
