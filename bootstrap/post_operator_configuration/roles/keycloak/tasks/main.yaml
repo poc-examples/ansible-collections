@@ -72,7 +72,7 @@
   community.general.keycloak_group:
     name: cluster-admins
     realm: "{{ config.client.client_id }}"
-    auth_client_id: "{{ config.client.client_id }}"
+    auth_client_id: "admin-cli"
     auth_keycloak_url: https://keycloak-keycloak.{{ domain }}/auth
     auth_realm: master
     auth_username: "{{ config.idp.username }}"
