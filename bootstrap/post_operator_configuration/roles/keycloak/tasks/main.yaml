@@ -70,12 +70,24 @@
 
 - name: Create a Keycloak group, authentication with credentials
   community.general.keycloak_group:
-    name: cluster-admins
-    realm: "{{ config.client.client_id }}"
     auth_client_id: "admin-cli"
     auth_keycloak_url: https://keycloak-keycloak.{{ domain }}/auth
     auth_realm: master
     auth_username: "{{ config.idp.username }}"
     auth_password: "{{ config.idp.password }}"
+    name: cluster-admins
+    realm: "{{ config.client.client_id }}"
   register: group
-  # delegate_to: localhost
+
+- name: Create initial admin user
+  community.general.keycloak_user:
+    auth_client_id: "admin-cli"
+    auth_keycloak_url: https://keycloak-keycloak.{{ domain }}/auth
+    auth_realm: master
+    auth_username: "{{ config.idp.username }}"
+    auth_password: "{{ config.idp.password }}"
+    realm: "{{ config.client.client_id }}"
+    username: admin
+    groups:
+      - name: cluster-admins
+        state: present
