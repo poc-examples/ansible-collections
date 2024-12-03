@@ -1,15 +1,4 @@
-- name: OpenShift GitOps - Ensure GitOps Namespace
-  kubernetes.core.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-        name: "{{ gitops.namespace }}"
-
-- name: OpenShift GitOps - Wait for CRD Exists
+- name: Ensure OpenShift-GitOps CRDs Exists
   kubernetes.core.k8s_info:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -24,7 +13,7 @@
   retries: 40
   delay: 30
 
-- name: OpenShift GitOps - Enable Kustomization Helm Patch
+- name: Configure ArgoCD Instance
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -175,7 +164,7 @@
           insecure: true
         kustomizeBuildOptions: '--enable-helm'
 
-- name: GitOps - Cluster Generator Secrets
+- name: Configure Default Cluster
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -200,7 +189,7 @@
         nameNormalized: "default"
         server: "https://kubernetes.default.svc"
 
-- name: GitOps - Configure Workshop
+- name: Create WorkShop Application
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -218,7 +207,6 @@
         source:
           chart: "{{ workshop.chart.name }}"
           repoURL: "{{ workshop.chart.repo }}"
-          version: v3
           targetRevision: "{{ workshop.chart.version }}"
           helm:
             valuesObject: null
@@ -232,7 +220,6 @@
               factor: 2
               maxDuration: 30s
           automated:
-            prune: false
             selfHeal: true
           managedNamespaceMetadata:
             labels:

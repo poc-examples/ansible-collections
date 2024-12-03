@@ -1,4 +1,4 @@
-- name: OpenShift GitOps - Ensure GitOps Namespace
+- name: Ensure OpenShift-GitOps Namespace
   kubernetes.core.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -9,7 +9,7 @@
       metadata:
         name: "{{ gitops.namespace }}"
 
-- name: OpenShift GitOps - Ensure GitOps Subscription
+- name: Ensure OpenShift-GitOps Subscription
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -27,7 +27,7 @@
         source: redhat-operators
         sourceNamespace: openshift-marketplace
 
-- name: OpenShift GitOps - Ensure Admin RBAC
+- name: Ensure RBAC
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"

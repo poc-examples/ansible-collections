@@ -1,6 +1,6 @@
 ---
 
-- name: Secrets Manager - Ensure Secrets Manager Namespace
+- name: Ensure Secrets Manager Namespace
   kubernetes.core.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -11,7 +11,7 @@
       metadata:
         name: "secrets-manager"
 
-- name: Secrets Manager - Create Service Account for Secrets Access
+- name: Ensure Service Account for Secrets Access
   kubernetes.core.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -23,7 +23,7 @@
         name: external-secrets-kubeaccess-sa
         namespace: secrets-manager
 
-- name: Secrets Manager - RBAC for Service Account
+- name: Ensure Service Account RBAC
   kubernetes.core.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -50,7 +50,7 @@
           verbs:
             - create
 
-- name: Secrets Manager - RBAC Binding for Service Account
+- name: Link Service Account to RBAC
   kubernetes.core.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -72,9 +72,9 @@
 
 - name: Set Vault Token
   set_fact:
-    vault_token: "{{ secrets.vault.token | default('root') }}"
+    vault_token: "{{ secrets.vault.token | default('root', true) }}"
 
-- name: Secrets Manager - Create Admin Vault Credentials
+- name: Ensure Admin Vault Credentials
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -91,22 +91,7 @@
     - secrets.vault.enabled is defined
     - secrets.vault.enabled is true
 
-- name: Secrets Manager - Create Secrets
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: "{{ item.name }}"
-        namespace: "secrets-manager"
-      stringData: "{{ item.secrets }}"
-  loop: "{{ secrets.pushSecrets }}"
-  no_log: true
-
-- name: Secrets Manager - Create ROSA Secrets
+- name: Ensure ROSA Credentials
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -121,3 +106,37 @@
         token: "{{ rosa_token }}"
   when:
     - rosa_token is defined
+
+- name: Ensure AWS Credentials
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: aws-credentials
+        namespace: "secrets-manager"
+      stringData:
+        AWS_ACCESS_KEY_ID: "{{ aws_credentials.AWS_ACCESS_KEY_ID }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_credentials.AWS_SECRET_ACCESS_KEY }}"
+  when:
+    - aws_credentials is defined
+    - aws_credentials.AWS_ACCESS_KEY_ID is defined
+    - aws_credentials.AWS_SECRET_ACCESS_KEY is defined
+
+- name: Secrets Manager - Create Secrets
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ item.name }}"
+        namespace: "secrets-manager"
+      stringData: "{{ item.secrets }}"
+  loop: "{{ secrets.pushSecrets }}"
+  no_log: true
