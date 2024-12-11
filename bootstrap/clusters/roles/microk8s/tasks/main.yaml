@@ -17,6 +17,7 @@
     state: started
     enabled: true
   delegate_to: "{{ ansible_host }}"
+  become: true
 
 - name: Ensure MicroK8s
   command: snap install microk8s --classic
