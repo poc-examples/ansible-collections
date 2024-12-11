@@ -1,4 +1,5 @@
-- name: Debug
-  debug:
-    msg: "running"
-
+- name: Ensure snapd
+  apt:
+    name: snapd
+    state: present
+    update_cache: true
