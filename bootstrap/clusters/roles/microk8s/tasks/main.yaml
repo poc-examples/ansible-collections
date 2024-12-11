@@ -12,7 +12,7 @@
   delegate_to: "{{ ansible_host }}"
 
 - name: Ensure snapd service is running
-  ansible.builtin.systemd:
+  systemd_service:
     name: snapd
     state: started
     enabled: true
