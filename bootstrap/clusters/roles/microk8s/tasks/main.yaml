@@ -11,6 +11,15 @@
     update_cache: true
   delegate_to: "{{ ansible_host }}"
 
+- name: WHOAMI
+  command: whoami
+  register: whoami
+  delegate_to: "{{ ansible_host }}"
+
+- name: whoami
+  debug:
+    msg: "{{ whoami }}"
+
 - name: Ensure snapd service is running
   systemd_service:
     name: snapd
