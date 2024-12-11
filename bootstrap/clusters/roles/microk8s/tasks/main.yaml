@@ -4,3 +4,13 @@
     state: present
     update_cache: true
   delegate_to: "{{ ansible_host }}"
+
+- name: Update Packages
+  apt:
+    update_cache: true
+    upgrade: dist
+
+- name: Ensure MicroK8s
+  command: snap install microk8s --classic
+  args:
+    creates: /snap/bin/microk8s
