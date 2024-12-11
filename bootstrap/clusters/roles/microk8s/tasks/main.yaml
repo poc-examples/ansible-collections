@@ -1,3 +1,9 @@
+- name: Update Packages
+  apt:
+    update_cache: true
+    upgrade: dist
+  delegate_to: "{{ ansible_host }}"
+
 - name: Ensure snapd
   apt:
     name: snapd
@@ -5,12 +11,15 @@
     update_cache: true
   delegate_to: "{{ ansible_host }}"
 
-- name: Update Packages
-  apt:
-    update_cache: true
-    upgrade: dist
+- name: Ensure snapd service is running
+  ansible.builtin.systemd:
+    name: snapd
+    state: started
+    enabled: true
+  delegate_to: "{{ ansible_host }}"
 
 - name: Ensure MicroK8s
   command: snap install microk8s --classic
   args:
     creates: /snap/bin/microk8s
+  delegate_to: "{{ ansible_host }}"
