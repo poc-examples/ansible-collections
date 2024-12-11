@@ -3,3 +3,4 @@
     name: snapd
     state: present
     update_cache: true
+  delegate_to: "{{ ansible_host }}"
