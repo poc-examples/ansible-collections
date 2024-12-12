@@ -1,7 +1,8 @@
 - name: Update Packages
   apt:
+    force_apt_get: yes
     update_cache: true
-    upgrade: dist
+    upgrade: yes
   register: packages
   delegate_to: "{{ ansible_host }}"
 - debug:
@@ -9,9 +10,9 @@
 
 - name: Ensure snapd
   apt:
-    name: snapd
-    state: present
-    update_cache: true
+    force_apt_get: yes
+    name: 
+      - snapd
   register: snapd
   delegate_to: "{{ ansible_host }}"
 - debug:
