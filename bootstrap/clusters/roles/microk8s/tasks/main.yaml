@@ -3,6 +3,7 @@
     force_apt_get: yes
     update_cache: true
     upgrade: yes
+    state: latest
   register: packages
   delegate_to: "{{ ansible_host }}"
 - debug:
@@ -18,12 +19,12 @@
 - debug:
     msg: "{{ snapd }}"
 
-# - name: Ensure snapd service is running
-#   service:
-#     name: snapd
-#     state: started
-#     enabled: true
-#   delegate_to: "{{ ansible_host }}"
+- name: Ensure snapd service is running
+  service:
+    name: snapd
+    state: started
+    enabled: true
+  delegate_to: "{{ ansible_host }}"
 
 - name: Ensure MicroK8s
   snap: 
