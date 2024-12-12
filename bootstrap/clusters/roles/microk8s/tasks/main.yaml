@@ -4,7 +4,6 @@
     upgrade: dist
   register: packages
   delegate_to: "{{ ansible_host }}"
-
 - debug:
     msg: "{{ packages }}"
 
@@ -13,7 +12,10 @@
     name: snapd
     state: present
     update_cache: true
+  register: snapd
   delegate_to: "{{ ansible_host }}"
+- debug:
+    msg: "{{ snapd }}"
 
 # - name: Ensure snapd service is running
 #   service:
