@@ -1,4 +1,4 @@
 - name: Update Packages
-  ansible.builtin.dnf:
+  ansible.builtin.yum:
     name: "*"
     state: latest
