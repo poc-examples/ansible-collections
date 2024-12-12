@@ -26,10 +26,9 @@
 
 - name: Enable Snapd Service
   ansible.builtin.systemd:
-    name: snapd
+    name: snapd.socket
     state: started
-    enabled: yes
-    masked: no
+    enabled: true
   register: service
   delegate_to: "{{ ansible_host }}"
 - debug:
