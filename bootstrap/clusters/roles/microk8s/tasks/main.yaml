@@ -22,6 +22,4 @@
   snap: 
     name: microk8
     classic: yes
-  args:
-    creates: /snap/bin/microk8s
   delegate_to: "{{ ansible_host }}"
