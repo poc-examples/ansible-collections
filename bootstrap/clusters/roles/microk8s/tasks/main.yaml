@@ -2,3 +2,6 @@
   ansible.builtin.yum:
     name: "*"
     state: latest
+
+- debug:
+    msg: "{{ test }}"
