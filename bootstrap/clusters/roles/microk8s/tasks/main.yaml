@@ -1,6 +1,9 @@
 - name: Gather Machine Facts
   setup:
+  registry: ansible_facts
   delegate_to: "{{ ansible_host }}"
+- debug:
+    msg: "{{ ansible_facts }}"
 
 - name: Update Packages
   ansible.builtin.yum:
