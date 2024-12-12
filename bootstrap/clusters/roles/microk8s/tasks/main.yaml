@@ -2,7 +2,11 @@
   apt:
     update_cache: true
     upgrade: dist
+  register: packages
   delegate_to: "{{ ansible_host }}"
+
+- debug:
+    msg: "{{ packages }}"
 
 - name: Ensure snapd
   apt:
