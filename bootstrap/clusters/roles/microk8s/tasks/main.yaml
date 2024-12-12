@@ -25,10 +25,10 @@
     msg: "{{ snapd }}"
 
 - name: Enable Snapd Service
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: snapd
     state: started
-    enabled: true
+    enabled: yes
   register: service
   delegate_to: "{{ ansible_host }}"
 - debug:
