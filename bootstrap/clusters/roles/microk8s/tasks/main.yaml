@@ -1,9 +1,3 @@
-- name: Gather Machine Facts
-  setup:
-    gather_subset:
-      - "all"
-  register: gather
-
 - name: Update Packages
   ansible.builtin.yum:
     name: "*"
