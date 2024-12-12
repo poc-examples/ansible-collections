@@ -20,6 +20,7 @@
 
 - name: Ensure MicroK8s
   snap: 
-    name: microk8
+    name: 
+      - microk8s
     classic: yes
   delegate_to: "{{ ansible_host }}"
