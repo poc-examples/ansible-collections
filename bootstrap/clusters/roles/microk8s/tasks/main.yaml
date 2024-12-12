@@ -1,6 +1,7 @@
 - name: Gather Machine Facts
   setup:
-  registry: ansible_facts
+    gather_subset:
+      - "all"
   delegate_to: "{{ ansible_host }}"
 - debug:
     msg: "{{ ansible_facts }}"
