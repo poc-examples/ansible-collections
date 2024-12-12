@@ -24,6 +24,15 @@
 - debug:
     msg: "{{ snapd }}"
 
+- name: Unmask Snapd Service
+  ansible.builtin.systemd:
+    name: snapd
+    masked: no
+  register: masked
+  delegate_to: "{{ ansible_host }}"
+- debug:
+    msg: "{{ masked }}"
+
 - name: Enable Snapd Service
   ansible.builtin.systemd:
     name: snapd
