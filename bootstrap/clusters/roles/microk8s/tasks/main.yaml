@@ -37,7 +37,7 @@
 - name: Ensure MicroK8s
   community.general.snap: 
     name: microk8s
-    classic: yes
+    classic: true
   register: microk8s
   delegate_to: "{{ ansible_host }}"
 - debug:
