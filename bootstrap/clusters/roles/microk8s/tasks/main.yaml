@@ -1,3 +1,10 @@
+- name: Install apt-utils to avoid debconf warnings
+  ansible.builtin.apt:
+    name: apt-utils
+    state: present
+    update_cache: true
+    install_recommends: false
+
 - name: Update Packages
   apt:
     force_apt_get: yes
