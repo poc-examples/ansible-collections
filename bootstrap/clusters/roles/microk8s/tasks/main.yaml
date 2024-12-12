@@ -1,9 +1,9 @@
-- name: Install apt-utils to avoid debconf warnings
-  ansible.builtin.apt:
-    name: apt-utils
-    state: present
-    update_cache: true
-    install_recommends: false
+# - name: Install apt-utils to avoid debconf warnings
+#   ansible.builtin.apt:
+#     name: apt-utils
+#     state: present
+#     update_cache: true
+#     install_recommends: false
 
 - name: Update Packages
   ansible.builtin.apt:
@@ -15,26 +15,30 @@
 - debug:
     msg: "{{ packages }}"
 
-- name: Ensure snapd
+- name: Ensure Snapd
   ansible.builtin.apt:
-    name: 
-      - snapd
+    name: snapd
     state: latest
   register: snapd
   delegate_to: "{{ ansible_host }}"
 - debug:
     msg: "{{ snapd }}"
 
-- name: Ensure snapd service is running
-  service:
+- name: Enable Snapd Service
+  ansible.builtin.service:
     name: snapd
     state: started
     enabled: true
+  register: service
   delegate_to: "{{ ansible_host }}"
+- debug:
+    msg: "{{ service }}"
 
 - name: Ensure MicroK8s
-  snap: 
-    name: 
-      - microk8s
+  community.general.snap: 
+    name: microk8s
     classic: yes
+  register: microk8s
   delegate_to: "{{ ansible_host }}"
+- debug:
+    msg: "{{ microk8s }}"
