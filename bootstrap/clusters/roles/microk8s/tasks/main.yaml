@@ -11,15 +11,17 @@
     update_cache: true
   delegate_to: "{{ ansible_host }}"
 
-- name: Ensure snapd service is running
-  service:
-    name: snapd
-    state: started
-    enabled: true
-  delegate_to: "{{ ansible_host }}"
+# - name: Ensure snapd service is running
+#   service:
+#     name: snapd
+#     state: started
+#     enabled: true
+#   delegate_to: "{{ ansible_host }}"
 
 - name: Ensure MicroK8s
-  command: snap install microk8s --classic
+  snap: 
+    name: microk8
+    classic: yes
   args:
     creates: /snap/bin/microk8s
   delegate_to: "{{ ansible_host }}"
