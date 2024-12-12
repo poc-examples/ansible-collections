@@ -3,10 +3,6 @@
     gather_subset:
       - "all"
   register: gather
-  delegate_to: "{{ ansible_host }}"
-  delegate_facts: true
-- debug:
-    msg: "{{ gather }}"
 
 - name: Update Packages
   ansible.builtin.yum:
