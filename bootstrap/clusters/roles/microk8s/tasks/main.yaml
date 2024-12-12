@@ -6,8 +6,7 @@
     install_recommends: false
 
 - name: Update Packages
-  apt:
-    force_apt_get: yes
+  ansible.builtin.apt:
     update_cache: true
     upgrade: yes
     state: latest
@@ -17,10 +16,10 @@
     msg: "{{ packages }}"
 
 - name: Ensure snapd
-  apt:
-    force_apt_get: yes
+  ansible.builtin.apt:
     name: 
       - snapd
+    state: latest
   register: snapd
   delegate_to: "{{ ansible_host }}"
 - debug:
