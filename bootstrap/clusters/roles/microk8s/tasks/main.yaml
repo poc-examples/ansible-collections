@@ -1,8 +1,6 @@
-- name: Gather date and time only
+- name: Gather Machine Facts
   setup:
-    gather_subset:
-      - "date_time"
-      - "!min"
+  delegate_to: "{{ ansible_host }}"
 
 - name: Update Packages
   ansible.builtin.yum:
