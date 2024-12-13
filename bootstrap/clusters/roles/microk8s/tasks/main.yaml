@@ -31,10 +31,13 @@
         name: local-machines
         autostart: true
         xml: |
-          <pool type='dir'>
+          <pool type='logical'>
             <name>local-machines</name>
+            <source>
+              <name>fedora_k8s</name>
+            </source>
             <target>
-              <path>/var/lib/libvirt/storage/cockpit_pool</path>
+              <path>/dev/fedora_k8s</path>
             </target>
           </pool>
 
