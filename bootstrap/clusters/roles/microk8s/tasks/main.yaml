@@ -27,8 +27,7 @@
 
     - name: Define and start the storage pool
       community.libvirt.virt_pool:
-        command: create
-        name: local-machines
+        command: define
         state: active
         autostart: true
         xml: |
