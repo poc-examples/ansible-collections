@@ -11,25 +11,24 @@
       - wget
       - apt-transport-https
       - containerd
-      - docker.io
     state: latest
 
-- name: Ensure Groups
-  ansible.builtin.group:
-    name: docker
-    state: present
+# - name: Ensure Groups
+#   ansible.builtin.group:
+#     name: docker
+#     state: present
 
-- name: Add vagrant user to the docker group
-  ansible.builtin.user:
-    name: vagrant
-    groups: docker
-    append: true
+# - name: Add vagrant user to the docker group
+#   ansible.builtin.user:
+#     name: vagrant
+#     groups: docker
+#     append: true
 
-- name: start k3s
-  ansible.builtin.command:
-    cmd: "curl -sfL https://get.k3s.io | sh -"
-  args:
-    creates: /usr/local/bin/k3s
+# - name: start k3s
+#   ansible.builtin.command:
+#     cmd: "curl -sfL https://get.k3s.io | sh -"
+#   args:
+#     creates: /usr/local/bin/k3s
 
 # - name: Start Libvirtd Service
 #   ansible.builtin.service:
