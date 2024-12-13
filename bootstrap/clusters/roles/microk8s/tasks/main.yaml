@@ -1,3 +1,9 @@
+- name: Enable Docker Repository
+  ansible.builtin.yum_repository:
+    name: docker
+    description: docker repo
+    baseurl: https://download.docker.com/linux/fedora/41/x86_64/stable
+
 - name: Update System Packages
   ansible.builtin.dnf:
     name: "*"
@@ -11,13 +17,10 @@
       - wget
       - apt-transport-https
       - containerd
+      - docker-ce
+      - docker-ce-cli
+      - docker-buildx-plugin
     state: latest
-
-- name: Add repository
-  ansible.builtin.yum_repository:
-    name: docker
-    description: docker repo
-    baseurl: https://download.docker.com/linux/fedora/41/x86_64/stable
 
 # - name: Ensure Groups
 #   ansible.builtin.group:
