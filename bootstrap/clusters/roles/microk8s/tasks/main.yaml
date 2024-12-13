@@ -28,12 +28,13 @@
     - name: Define and start the storage pool
       community.libvirt.virt_pool:
         command: define
+        name: local-machines
         state: active
         autostart: true
-        xml: |
-          <pool type='dir'>
-            <name>local-machines</name>
-            <target>
-              <path>/var/lib/libvirt/storage/cockpit_pool</path>
-            </target>
-          </pool>
+        # xml: |
+        #   <pool type='dir'>
+        #     <name>local-machines</name>
+        #     <target>
+        #       <path>/var/lib/libvirt/storage/cockpit_pool</path>
+        #     </target>
+        #   </pool>
