@@ -10,3 +10,8 @@
       - cockpit-machines
     state: latest
 
+- name: Start LibVirt Service
+  ansible.builtin.service:
+    name: libvirt
+    state: started
+    enabled: true
