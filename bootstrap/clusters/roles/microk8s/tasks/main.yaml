@@ -1,10 +1,25 @@
 - name: Update System Packages
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name: "*"
     state: latest
 
 - name: Install Required Packages
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
+    name:
+      - docker 
+      - docker-client
+      - docker-client-latest
+      - docker-common
+      - docker-latest
+      - docker-latest-logrotate
+      - docker-logrotate
+      - docker-selinux
+      - docker-engine-selinux
+      - docker-engine
+    state: absent
+
+- name: Install Required Packages
+  ansible.builtin.dnf:
     name:
       - jq
       - curl
