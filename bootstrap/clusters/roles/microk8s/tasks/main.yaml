@@ -6,49 +6,71 @@
 - name: Install Required Packages
   ansible.builtin.yum:
     name:
-      - libvirt
-      - cockpit-machines
+      - jq
+      - curl
+      - wget
+      - apt-transport-https
+      - containerd
+      - docker.io
     state: latest
 
-- name: Start Libvirtd Service
-  ansible.builtin.service:
-    name: libvirtd
-    state: started
-    enabled: true
+- name: Ensure Groups
+  ansible.builtin.group:
+    name: docker
+    state: present
 
-- name: Create Storage Pool
-  block:
+- name: Add vagrant user to the docker group
+  ansible.builtin.user:
+    name: vagrant
+    groups: docker
+    append: true
 
-    - name: Ensure Directory
-      ansible.builtin.file:
-        path: "/var/lib/libvirt/storage/cockpit_pool"
-        state: directory
-        mode: '0755'
+- name: start k3s
+  ansible.builtin.command:
+    cmd: "curl -sfL https://get.k3s.io | sh -"
+  args:
+    creates: /usr/local/bin/k3s
 
-    - name: Create a new logical volume
-      community.general.lvol:
-        vg: "fedora_k8s"
-        lv: "openshift"
-        size: "500G"
+# - name: Start Libvirtd Service
+#   ansible.builtin.service:
+#     name: libvirtd
+#     state: started
+#     enabled: true
 
-    - name: Define Storage Pool
-      community.libvirt.virt_pool:
-        command: define
-        name: local-machines
-        autostart: true
-        xml: |
-          <pool type='logical'>
-            <name>local-machines</name>
-            <source>
-              <name>fedora_k8s</name>
-            </source>
-            <target>
-              <path>/dev/fedora_k8s</path>
-            </target>
-          </pool>
+# - name: Create Storage Pool
+#   block:
 
-    - name: Enable Storage Pool
-      community.libvirt.virt_pool:
-        name: local-machines
-        state: active
-        autostart: true
+#     - name: Ensure Directory
+#       ansible.builtin.file:
+#         path: "/var/lib/libvirt/storage/cockpit_pool"
+#         state: directory
+#         mode: '0755'
+
+#     - name: Create a new logical volume
+#       community.general.lvol:
+#         vg: "fedora_k8s"
+#         lv: "openshift"
+#         size: "500G"
+
+#     - name: Define Storage Pool
+#       community.libvirt.virt_pool:
+#         command: define
+#         name: local-machines
+#         autostart: true
+#         xml: |
+#           <pool type='logical'>
+#             <name>local-machines</name>
+#             <source>
+#               <name>fedora_k8s</name>
+#             </source>
+#             <target>
+#               <path>/dev/fedora_k8s</path>
+#             </target>
+#           </pool>
+
+#     - name: Enable Storage Pool
+#       community.libvirt.virt_pool:
+#         name: local-machines
+#         state: active
+#         autostart: true
+
