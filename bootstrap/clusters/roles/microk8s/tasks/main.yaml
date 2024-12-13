@@ -22,26 +22,14 @@
     state: started
     enabled: true
 
-# - name: Enable K3S
-#   ansible.builtin.shell:
-#     cmd: "curl -sfL https://get.k3s.io | sh -"
-#   args:
-#     creates: /usr/local/bin/k3s
+- name: Create Storage Pool
+  block:
 
-# - name: Create Storage Pool
-#   block:
-
-#     - name: Ensure Directory
-#       ansible.builtin.file:
-#         path: "/var/lib/libvirt/storage/cockpit_pool"
-#         state: directory
-#         mode: '0755'
-
-#     - name: Create a new logical volume
-#       community.general.lvol:
-#         vg: "fedora_k8s"
-#         lv: "openshift"
-#         size: "500G"
+    - name: Create a new logical volume
+      community.general.lvol:
+        vg: "fedora_k8s"
+        lv: "openshift"
+        size: "500G"
 
 #     - name: Define Storage Pool
 #       community.libvirt.virt_pool:
