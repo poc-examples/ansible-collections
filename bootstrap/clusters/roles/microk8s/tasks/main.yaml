@@ -29,6 +29,7 @@
       community.libvirt.virt_pool:
         command: define
         name: local-machines
+        autostart: true
         xml: |
           <pool type='dir'>
             <name>local-machines</name>
