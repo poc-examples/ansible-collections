@@ -31,21 +31,21 @@
         lv: "openshift"
         size: "500G"
 
-#     - name: Define Storage Pool
-#       community.libvirt.virt_pool:
-#         command: define
-#         name: local-machines
-#         autostart: true
-#         xml: |
-#           <pool type='logical'>
-#             <name>local-machines</name>
-#             <source>
-#               <name>fedora_k8s</name>
-#             </source>
-#             <target>
-#               <path>/dev/fedora_k8s</path>
-#             </target>
-#           </pool>
+    - name: Define Storage Pool
+      community.libvirt.virt_pool:
+        command: define
+        name: local-machines
+        autostart: true
+        xml: |
+          <pool type='logical'>
+            <name>local-machines</name>
+            <source>
+              <name>fedora_k8s</name>
+            </source>
+            <target>
+              <path>/dev/fedora_k8s</path>
+            </target>
+          </pool>
 
 #     - name: Enable Storage Pool
 #       community.libvirt.virt_pool:
