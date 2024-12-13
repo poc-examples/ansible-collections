@@ -12,6 +12,6 @@
 
 - name: Start LibVirt Service
   ansible.builtin.service:
-    name: libvirt
+    name: libvirtd
     state: started
     enabled: true
