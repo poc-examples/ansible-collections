@@ -1,11 +1,8 @@
-- name: Enable Docker Repository
-  ansible.builtin.yum_repository:
-    name: docker
-    description: Docker CE Stable Repository
-    baseurl: https://download.docker.com/linux/fedora/41/x86_64/stable
-    gpgcheck: yes
-    gpgkey: https://download.docker.com/linux/fedora/gpg
-    enabled: yes
+- name: Enable Firewall Service
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+    enabled: true
 
 - name: Update System Packages
   ansible.builtin.yum:
@@ -15,33 +12,15 @@
 - name: Install Required Packages
   ansible.builtin.yum:
     name:
-      - jq
-      - curl
-      - wget
-      - apt-transport-https
-      - containerd.io
-      - docker-ce
-      - docker-ce-cli
-      - docker-buildx-plugin
+      - libvirt
+      - cockpit-machines
     state: latest
 
-- name: Start Docker Service
-  ansible.builtin.service:
-    name: docker
-    state: started
-    enabled: true
-
-- name: Disable Firewall Service
-  ansible.builtin.service:
-    name: firewalld
-    state: stopped
-    enabled: false
-
-- name: Enable K3S
-  ansible.builtin.shell:
-    cmd: "curl -sfL https://get.k3s.io | sh -"
-  args:
-    creates: /usr/local/bin/k3s
+# - name: Enable K3S
+#   ansible.builtin.shell:
+#     cmd: "curl -sfL https://get.k3s.io | sh -"
+#   args:
+#     creates: /usr/local/bin/k3s
 
 # - name: Start Libvirtd Service
 #   ansible.builtin.service:
