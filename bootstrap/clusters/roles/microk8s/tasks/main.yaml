@@ -1,7 +1,11 @@
-- name: Update Packages
+- name: Update System Packages
   ansible.builtin.yum:
     name: "*"
     state: latest
 
-- debug:
-    msg: "{{ test }}"
+- name: Install Required Packages
+  ansible.builtin.yum:
+    name:
+      - podman
+    state: latest
+
