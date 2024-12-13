@@ -6,6 +6,7 @@
 - name: Install Required Packages
   ansible.builtin.yum:
     name:
-      - podman
+      - libvirt
+      - cockpit-machines
     state: latest
 
