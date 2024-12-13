@@ -10,8 +10,26 @@
       - cockpit-machines
     state: latest
 
-- name: Start LibVirt Service
+- name: Start Libvirtd Service
   ansible.builtin.service:
     name: libvirtd
     state: started
     enabled: true
+
+- name: Create Storage Pool
+  block:
+
+    - name: Ensure Directory
+      ansible.builtin.file:
+        path: "/var/lib/libvirt/storage/cockpit_pool"
+        state: directory
+        mode: '0755'
+
+    - name: Define and start the storage pool
+      community.libvirt.virt_pool:
+        command: define
+        name: "local-machines"
+        type: "dir"
+        target: "/var/lib/libvirt/storage/cockpit_pool"
+        state: active
+        autostart: true
