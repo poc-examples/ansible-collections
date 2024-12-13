@@ -47,9 +47,9 @@
             </target>
           </pool>
 
-#     - name: Enable Storage Pool
-#       community.libvirt.virt_pool:
-#         name: local-machines
-#         state: active
-#         autostart: true
+    - name: Enable Storage Pool
+      community.libvirt.virt_pool:
+        name: local-machines
+        state: active
+        autostart: true
 
