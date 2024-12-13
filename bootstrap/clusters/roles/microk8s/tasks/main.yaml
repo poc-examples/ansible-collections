@@ -1,26 +1,35 @@
 - name: Enable Docker Repository
   ansible.builtin.yum_repository:
     name: docker
-    description: docker repo
+    description: Docker CE Stable Repository
     baseurl: https://download.docker.com/linux/fedora/41/x86_64/stable
+    gpgcheck: yes
+    gpgkey: https://download.docker.com/linux/fedora/gpg
+    enabled: yes
 
 - name: Update System Packages
-  ansible.builtin.dnf:
+  ansible.builtin.yum:
     name: "*"
     state: latest
 
 - name: Install Required Packages
-  ansible.builtin.dnf:
+  ansible.builtin.yum:
     name:
       - jq
       - curl
       - wget
       - apt-transport-https
-      - containerd
+      - containerd.io
       - docker-ce
       - docker-ce-cli
       - docker-buildx-plugin
     state: latest
+
+- name: Start Docker Service
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
 
 # - name: Ensure Groups
 #   ansible.builtin.group:
