@@ -38,7 +38,7 @@
     enabled: false
 
 - name: start k3s
-  ansible.builtin.command:
+  ansible.builtin.shell:
     cmd: "curl -sfL https://get.k3s.io | sh -"
   args:
     creates: /usr/local/bin/k3s
