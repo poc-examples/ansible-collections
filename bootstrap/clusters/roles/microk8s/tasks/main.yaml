@@ -25,6 +25,12 @@
         state: directory
         mode: '0755'
 
+    - name: Create a new logical volume
+      community.general.lvol:
+        vg: "fedora_k8s"
+        lv: "openshift"
+        size: "500G"
+
     - name: Define Storage Pool
       community.libvirt.virt_pool:
         command: define
