@@ -6,27 +6,18 @@
 - name: Install Required Packages
   ansible.builtin.dnf:
     name:
-      - docker 
-      - docker-client
-      - docker-client-latest
-      - docker-common
-      - docker-latest
-      - docker-latest-logrotate
-      - docker-logrotate
-      - docker-selinux
-      - docker-engine-selinux
-      - docker-engine
-    state: absent
-
-- name: Install Required Packages
-  ansible.builtin.dnf:
-    name:
       - jq
       - curl
       - wget
       - apt-transport-https
       - containerd
     state: latest
+
+- name: Add repository
+  ansible.builtin.yum_repository:
+    name: docker
+    description: docker repo
+    baseurl: https://download.docker.com/linux/fedora/41/x86_64/stable
 
 # - name: Ensure Groups
 #   ansible.builtin.group:
