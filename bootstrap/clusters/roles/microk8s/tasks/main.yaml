@@ -16,17 +16,17 @@
       - cockpit-machines
     state: latest
 
+- name: Start Libvirtd Service
+  ansible.builtin.service:
+    name: libvirtd
+    state: started
+    enabled: true
+
 # - name: Enable K3S
 #   ansible.builtin.shell:
 #     cmd: "curl -sfL https://get.k3s.io | sh -"
 #   args:
 #     creates: /usr/local/bin/k3s
-
-# - name: Start Libvirtd Service
-#   ansible.builtin.service:
-#     name: libvirtd
-#     state: started
-#     enabled: true
 
 # - name: Create Storage Pool
 #   block:
