@@ -29,6 +29,13 @@
       community.libvirt.virt_pool:
         command: define
         name: local-machines
+        xml: |
+          <pool type='dir'>
+            <name>local-machines</name>
+            <target>
+              <path>/var/lib/libvirt/storage/cockpit_pool</path>
+            </target>
+          </pool>
 
     - name: Enable Storage Pool
       community.libvirt.virt_pool:
