@@ -27,10 +27,8 @@
 
     - name: Define and start the storage pool
       community.libvirt.virt_pool:
-        command: define
+        command: create
         name: local-machines
-        # type: "dir"
-        # target: "/var/lib/libvirt/storage/cockpit_pool"
         state: active
         autostart: true
         xml: |
