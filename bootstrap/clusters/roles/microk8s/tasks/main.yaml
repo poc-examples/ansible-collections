@@ -25,16 +25,19 @@
         state: directory
         mode: '0755'
 
-    - name: Define and start the storage pool
+    - name: Define Storage Pool
       community.libvirt.virt_pool:
         command: define
+        xml: |
+          <pool type='dir'>
+            <name>local-machines</name>
+            <target>
+              <path>/var/lib/libvirt/storage/cockpit_pool</path>
+            </target>
+          </pool>
+
+    - name: Enable Storage Pool
+      community.libvirt.virt_pool:
         name: local-machines
         state: active
         autostart: true
-        # xml: |
-        #   <pool type='dir'>
-        #     <name>local-machines</name>
-        #     <target>
-        #       <path>/var/lib/libvirt/storage/cockpit_pool</path>
-        #     </target>
-        #   </pool>
