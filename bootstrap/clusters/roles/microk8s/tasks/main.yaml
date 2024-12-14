@@ -36,27 +36,35 @@
         fstype: ext4
         dev: "/dev/fedora_k8s/openshift"
 
-    - name: Mount Openshift Storage
+    - name: Create Mount Path 
       ansible.builtin.file:
         path: /mnt/openshift
         state: directory
         mode: '0755'
 
-#     - name: Define Storage Pool
-#       community.libvirt.virt_pool:
-#         command: define
-#         name: local-machines
-#         autostart: true
-#         xml: |
-#           <pool type='logical'>
-#             <name>local-machines</name>
-#             <source>
-#               <name>fedora_k8s</name>
-#             </source>
-#             <target>
-#               <path>/dev/fedora_k8s</path>
-#             </target>
-#           </pool>
+    - name: Mount Logical Volume
+      ansible.posix.mount:
+        path: /mnt/openshift
+        src: /dev/fedora_k8s/openshift
+        fstype: ext4
+        opts: defaults
+        state: mounted
+
+    # - name: Define Storage Pool
+    #   community.libvirt.virt_pool:
+    #     command: define
+    #     name: local-machines
+    #     autostart: true
+    #     xml: |
+    #       <pool type='dir'>
+    #         <name>local-machines</name>
+    #         <source>
+    #           <name>fedora_k8s</name>
+    #         </source>
+    #         <target>
+    #           <path>/dev/fedora_k8s</path>
+    #         </target>
+    #       </pool>
 
 #     - name: Enable Storage Pool
 #       community.libvirt.virt_pool:
