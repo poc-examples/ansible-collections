@@ -9,6 +9,41 @@
           options nouveau modeset=0
         mode: '0644'
 
+    - name: Ensure initramfs is updated after blacklisting nouveau
+      ansible.builtin.command: dracut --force
+      args:
+        creates: /boot/initramfs-{{ ansible_kernel }}.img
+      # notify: Reboot System
+
+    - name: Unbind NVIDIA GPU for passthrough
+      ansible.builtin.shell: |
+        echo "0000:{{ item.pci_address }}" > /sys/bus/pci/devices/0000:{{ item.pci_address }}/driver/unbind
+      vars:
+        addresses:
+          - pci_address: "02:00.0"
+          - pci_address: "02:00.1"
+          - pci_address: "04:00.0"
+          - pci_address: "04:00.1"
+          - pci_address: "82:00.0"
+          - pci_address: "82:00.1"
+          - pci_address: "83:00.0"
+          - pci_address: "83:00.1"
+      loop: "{{ addresses }}"
+      loop_control:
+        loop_var: item
+      ignore_errors: true
+
+    - name: Add NVIDIA GPU PCI address to vfio-pci for passthrough
+      ansible.builtin.lineinfile:
+        path: /etc/modprobe.d/vfio.conf
+        line: "options vfio-pci ids=10de:2805,10de:22bd,10de:2204,10de:1aef,"
+        create: yes
+        mode: '0644'
+
+    - name: Update initramfs for vfio-pci changes
+      ansible.builtin.command: dracut --force
+      # notify: Reboot System
+
 - name: Enable Firewall Service
   ansible.builtin.service:
     name: firewalld
