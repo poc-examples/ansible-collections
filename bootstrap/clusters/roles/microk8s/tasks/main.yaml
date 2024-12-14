@@ -75,7 +75,12 @@
         state: active
         autostart: true
 
+- name: Download Ubuntu 24.04.1 ISO
+  ansible.builtin.get_url:
+    url: "https://releases.ubuntu.com/24.04.1/ubuntu-24.04.1-live-server-amd64.iso"
+    dest: "/tmp/ubuntu-24.04.1-live-server-amd64.iso"
+    mode: '0644'
+
 # - name: Virtual Machine Networking
 #   block:
-
 #     - name: stuff
