@@ -50,27 +50,30 @@
         opts: defaults
         state: mounted
 
-    # - name: Define Storage Pool
-    #   community.libvirt.virt_pool:
-    #     command: define
-    #     name: local-machines
-    #     autostart: true
-    #     xml: |
-    #       <pool type='dir'>
-    #         <name>local-machines</name>
-    #         <source>
-    #           <name>fedora_k8s</name>
-    #         </source>
-    #         <target>
-    #           <path>/dev/fedora_k8s</path>
-    #         </target>
-    #       </pool>
+    - name: Create Data Path
+      ansible.builtin.file:
+        path: /mnt/openshift/data
+        state: directory
+        mode: '0755' 
 
-#     - name: Enable Storage Pool
-#       community.libvirt.virt_pool:
-#         name: local-machines
-#         state: active
-#         autostart: true
+    - name: Define Storage Pool
+      community.libvirt.virt_pool:
+        command: define
+        name: openshift
+        autostart: true
+        xml: |
+          <pool type='dir'>
+            <name>openshift</name>
+            <target>
+              <path>/mnt/openshift/data</path>
+            </target>
+          </pool>
+
+    - name: Enable Storage Pool
+      community.libvirt.virt_pool:
+        name: openshift
+        state: active
+        autostart: true
 
 # - name: Virtual Machine Networking
 #   block:
