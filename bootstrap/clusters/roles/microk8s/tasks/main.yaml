@@ -25,31 +25,46 @@
 - name: Create Storage Pool
   block:
 
-    - name: Create a new logical volume
+    - name: Create Openshift Logical Volume
       community.general.lvol:
         vg: "fedora_k8s"
         lv: "openshift"
         size: "500G"
 
-    - name: Define Storage Pool
-      community.libvirt.virt_pool:
-        command: define
-        name: local-machines
-        autostart: true
-        xml: |
-          <pool type='logical'>
-            <name>local-machines</name>
-            <source>
-              <name>fedora_k8s</name>
-            </source>
-            <target>
-              <path>/dev/fedora_k8s</path>
-            </target>
-          </pool>
+    - name: Create Ext4 Filesystem
+      community.general.filesystem:
+        fstype: ext4
+        dev: "/dev/fedora_k8s/openshift"
 
-    - name: Enable Storage Pool
-      community.libvirt.virt_pool:
-        name: local-machines
-        state: active
-        autostart: true
+    - name: Mount Openshift Storage
+      ansible.builtin.file:
+        path: /mnt/openshift
+        state: directory
+        mode: '0755'
 
+#     - name: Define Storage Pool
+#       community.libvirt.virt_pool:
+#         command: define
+#         name: local-machines
+#         autostart: true
+#         xml: |
+#           <pool type='logical'>
+#             <name>local-machines</name>
+#             <source>
+#               <name>fedora_k8s</name>
+#             </source>
+#             <target>
+#               <path>/dev/fedora_k8s</path>
+#             </target>
+#           </pool>
+
+#     - name: Enable Storage Pool
+#       community.libvirt.virt_pool:
+#         name: local-machines
+#         state: active
+#         autostart: true
+
+# - name: Virtual Machine Networking
+#   block:
+
+#     - name: stuff
