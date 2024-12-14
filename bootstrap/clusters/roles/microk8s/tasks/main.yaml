@@ -1,3 +1,14 @@
+- name: Free PCI Devices
+  block:
+
+    - name: Blacklist nouveau drivers
+      ansible.builtin.copy:
+        dest: /etc/modprobe.d/blacklist-nouveau.conf
+        content: |
+          blacklist nouveau
+          options nouveau modeset=0
+        mode: '0644'
+
 - name: Enable Firewall Service
   ansible.builtin.service:
     name: firewalld
@@ -75,11 +86,14 @@
         state: active
         autostart: true
 
-- name: Download Ubuntu 24.04.1 ISO
-  ansible.builtin.get_url:
-    url: "https://releases.ubuntu.com/24.04.1/ubuntu-24.04.1-live-server-amd64.iso"
-    dest: "/tmp/ubuntu-24.04.1-live-server-amd64.iso"
-    mode: '0644'
+- name: Create VM
+  block: 
+
+    - name: Download Ubuntu 24.04.1 ISO
+      ansible.builtin.get_url:
+        url: "https://releases.ubuntu.com/24.04.1/ubuntu-24.04.1-live-server-amd64.iso"
+        dest: "/tmp/ubuntu-24.04.1-live-server-amd64.iso"
+        mode: '0644'
 
 # - name: Virtual Machine Networking
 #   block:
