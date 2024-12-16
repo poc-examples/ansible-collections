@@ -44,6 +44,15 @@
       ansible.builtin.command: dracut --force
       # notify: Reboot System
 
+    # - name: Replace GRUB_CMDLINE_LINUX value
+    #   ansible.builtin.lineinfile:
+    #     path: /etc/default/grub
+    #     regexp: '^GRUB_CMDLINE_LINUX=.*'
+    #     line: 'GRUB_CMDLINE_LINUX="rd.lvm.lv=fedora_k8s/root rhgb quiet intel_iommu=on iommu=pt"'
+    #     backrefs: true
+
+    # sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+
 - name: Enable Firewall Service
   ansible.builtin.service:
     name: firewalld
