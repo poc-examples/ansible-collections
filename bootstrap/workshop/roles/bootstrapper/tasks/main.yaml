@@ -5,17 +5,23 @@
     chdir: "../terraform"
   register: tf_outputs
   when:
-    - cluster.local is not defined and cluster.create is defined and cluster.create == true
+    - cluster.type is defined
+    - cluster.type != "local"
+    - cluster.create is defined
+    - cluster.create == true
 
 - name: Load Terraform State
   ansible.builtin.set_fact:
     terraform_outputs: "{{ tf_outputs.stdout | from_json }}"
   when:
-    - cluster.local is not defined and cluster.create is defined and cluster.create == true
+    - cluster.type is defined
+    - cluster.type != "local"
+    - cluster.create is defined
+    - cluster.create == true
 
 - name: Fetch OpenShift Domain
   ansible.builtin.set_fact:
-    openshift_domain: "{{ cluster.local.domain | default(terraform_outputs.domain.value) }}"
+    openshift_domain: "{{ cluster.domain | default(terraform_outputs.domain.value) }}"
 
 - name: Connecting to OpenShift - Can Take up to 7-15 Minutes
   community.okd.openshift_auth:
@@ -31,7 +37,7 @@
   community.kubernetes.k8s_info:
     host: "https://api.{{ openshift_domain }}:6443"
     api_key: "{{ login.openshift_auth.api_key }}"
-    validate_certs: "{{ cluster.local.validate_certs }}"
+    validate_certs: "{{ cluster.validate_certs }}"
     api_version: v1
     kind: Pod
   register: pod_info
@@ -46,7 +52,7 @@
   community.kubernetes.k8s_info:
     host: "https://api.{{ openshift_domain }}:6443"
     api_key: "{{ login.openshift_auth.api_key }}"
-    validate_certs: "{{ cluster.local.validate_certs }}"
+    validate_certs: "{{ cluster.validate_certs }}"
     api_version: config.openshift.io/v1
     kind: Ingress
     name: cluster
@@ -60,13 +66,13 @@
   vars:
     api_url: "https://api.{{ openshift_domain }}:6443"
     token: "{{ login.openshift_auth.api_key }}"
-    validate_certs: "{{ cluster.local.validate_certs }}"
-    gitops: "{{ cluster.local.gitops }}"
+    validate_certs: "{{ cluster.validate_certs }}"
+    gitops: "{{ cluster.gitops }}"
   ansible.builtin.include_role:
     name: gitops-operator
   when:
-    - cluster.local.gitops.enabled is defined
-    - cluster.local.gitops.enabled is true
+    - cluster.gitops.enabled is defined
+    - cluster.gitops.enabled is true
 
 # - name: Configure OpenShift-GitOps Instance
 #   vars:
