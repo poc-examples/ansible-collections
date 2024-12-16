@@ -180,8 +180,8 @@
           type: "{{ cluster.type }}"
           cluster: default
           cluster_name: "{{ cluster.cluster_name | default(cluster.name)}}"
-          version: "{{ cluster.version | default('not available') }}"
-          region: "{{ cluster.region | default('not available')}}"
+          version: "{{ cluster.version | default('not_available') }}"
+          region: "{{ cluster.region | default('not_available')}}"
           domain: "apps.{{ domain }}"
       stringData:
         config: '{"tlsClientConfig":{"insecure":false}}'
