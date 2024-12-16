@@ -14,7 +14,7 @@
     - cluster.local is not defined and cluster.create == true
 
 - debug:
-    msg: "{{ cluster.domain }}"
+    msg: "{{ cluster.local.domain }}"
 
 - name: Fetch OpenShift Domain
   ansible.builtin.set_fact:
