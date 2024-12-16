@@ -106,6 +106,7 @@
         token: "{{ rosa_token }}"
   when:
     - rosa_token is defined
+    - rosa_token != ""
 
 - name: Ensure AWS Credentials
   community.okd.k8s:
@@ -124,7 +125,9 @@
   when:
     - aws_credentials is defined
     - aws_credentials.AWS_ACCESS_KEY_ID is defined
+    - aws_credentials.AWS_ACCESS_KEY_ID != ""
     - aws_credentials.AWS_SECRET_ACCESS_KEY is defined
+    - aws_credentials.AWS_SECRET_ACCESS_KEY != ""
 
 - name: Secrets Manager - Create Secrets
   community.okd.k8s:

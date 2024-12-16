@@ -89,18 +89,18 @@
     - cluster.gitops.enabled is defined
     - cluster.gitops.enabled is true
 
-# - name: Secrets Management
-#   vars:
-#     api_url: "https://api.{{ openshift_domain }}:6443"
-#     token: "{{ login.openshift_auth.api_key }}"
-#     validate_certs: "{{ config.validate_certs }}"
-#     secrets: "{{ config.secrets }}"
-#     rosa_token: "{{ openshift.offline_token }}"
-#     aws_credentials:
-#       AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
-#       AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
-#   ansible.builtin.import_role:
-#     name: secrets-manager
+- name: Secrets Management
+  vars:
+    api_url: "https://api.{{ openshift_domain }}:6443"
+    token: "{{ login.openshift_auth.api_key }}"
+    validate_certs: "{{ cluster.validate_certs }}"
+    secrets: "{{ cluster.secrets }}"
+    rosa_token: "{{ cluster.offline_token }}"
+    aws_credentials:
+      AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+      AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+  ansible.builtin.import_role:
+    name: secrets-manager
 
 - name: Links 
   debug:
