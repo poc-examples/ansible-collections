@@ -42,19 +42,19 @@
   retries: 40
   delay: 30
 
-# - name: Fetch Cluster Ingress
-#   community.kubernetes.k8s_info:
-#     host: "https://api.{{ openshift_domain }}:6443"
-#     api_key: "{{ login.openshift_auth.api_key }}"
-#     validate_certs: "{{ config.validate_certs }}"
-#     api_version: config.openshift.io/v1
-#     kind: Ingress
-#     name: cluster
-#   register: ingress_info
+- name: Fetch Cluster Ingress
+  community.kubernetes.k8s_info:
+    host: "https://api.{{ openshift_domain }}:6443"
+    api_key: "{{ login.openshift_auth.api_key }}"
+    validate_certs: "{{ cluster.local.validate_certs }}"
+    api_version: config.openshift.io/v1
+    kind: Ingress
+    name: cluster
+  register: ingress_info
 
-# - name: Get Domain from Cluster Ingress
-#   set_fact:
-#     ingress_domain: "{{ ingress_info.resources[0].spec.domain | regex_replace('^apps\\.', '') }}"
+- name: Get Domain from Cluster Ingress
+  set_fact:
+    ingress_domain: "{{ ingress_info.resources[0].spec.domain | regex_replace('^apps\\.', '') }}"
 
 # - name: Install OpenShift-GitOps Operator
 #   vars:
