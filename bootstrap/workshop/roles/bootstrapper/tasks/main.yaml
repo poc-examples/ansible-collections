@@ -82,7 +82,7 @@
     validate_certs: "{{ cluster.validate_certs }}"
     gitops: "{{ cluster.gitops }}"
     workshop: "{{ cluster.workshop }}"
-    cluster: "{{ cluster }}"
+    # cluster: "{{ cluster }}"
   ansible.builtin.include_role:
     name: gitops-instance
   when:
