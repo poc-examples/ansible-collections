@@ -27,20 +27,20 @@
   retries: 45
   delay: 30
 
-# - name: Waiting for OpenShift Healthy State - Can Take up to 12-15 Minutes
-#   community.kubernetes.k8s_info:
-#     host: "https://api.{{ openshift_domain }}:6443"
-#     api_key: "{{ login.openshift_auth.api_key }}"
-#     validate_certs: "{{ config.validate_certs }}"
-#     api_version: v1
-#     kind: Pod
-#   register: pod_info
-#   until:
-#     - pod_info.resources is defined
-#     - pod_info.resources | length > 0
-#     - pod_info.resources | selectattr('status.phase', 'equalto', 'Pending') | length == 0
-#   retries: 40
-#   delay: 30
+- name: Waiting for OpenShift Healthy State - Can Take up to 12-15 Minutes
+  community.kubernetes.k8s_info:
+    host: "https://api.{{ openshift_domain }}:6443"
+    api_key: "{{ login.openshift_auth.api_key }}"
+    validate_certs: "{{ cluster.local.validate_certs }}"
+    api_version: v1
+    kind: Pod
+  register: pod_info
+  until:
+    - pod_info.resources is defined
+    - pod_info.resources | length > 0
+    - pod_info.resources | selectattr('status.phase', 'equalto', 'Pending') | length == 0
+  retries: 40
+  delay: 30
 
 # - name: Fetch Cluster Ingress
 #   community.kubernetes.k8s_info:
