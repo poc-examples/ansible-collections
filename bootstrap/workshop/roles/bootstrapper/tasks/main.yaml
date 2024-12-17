@@ -19,6 +19,10 @@
     - cluster.create is defined
     - cluster.create == true
 
+- name: Debug Cluster Type and Value
+  ansible.builtin.debug:
+    msg: "Cluster is of type {{ cluster | type_debug }}"
+
 - debug:
     msg: "{{ cluster.create }}"
 
