@@ -24,7 +24,15 @@
 
 - name: Fetch OpenShift Domain
   ansible.builtin.set_fact:
-    openshift_domain: "{{ cluster.domain if (cluster is defined and cluster.domain is defined) else terraform_outputs.domain.value }}"
+    openshift_domain: "{{ cluster.domain }}"
+  when:
+    - cluster.domain is defined
+
+- name: Fetch OpenShift Domain
+  ansible.builtin.set_fact:
+    openshift_domain: "{{ terraform_outputs.domain.value }}"
+  when:
+    - cluster.domain is not defined
 
 - name: Connecting to OpenShift - Can Take up to 7-15 Minutes
   community.okd.openshift_auth:
