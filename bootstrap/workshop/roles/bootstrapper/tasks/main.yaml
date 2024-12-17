@@ -24,7 +24,7 @@
 
 - name: Fetch OpenShift Domain
   ansible.builtin.set_fact:
-    openshift_domain: "{{ cluster.domain if ('domain' in cluster) else terraform_outputs.domain.value }}"
+    openshift_domain: "{{ cluster.domain | default(terraform_outputs.domain.value, true) }}"
 
 - debug:
     msg: "Domain: {{ openshift_domain }}"
