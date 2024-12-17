@@ -24,7 +24,7 @@
 
 - name: Fetch OpenShift Domain
   ansible.builtin.set_fact:
-    openshift_domain: "{{ cluster.domain | default(terraform_outputs.domain.value, 'true') }}"
+    openshift_domain: "{{ cluster.get('domain', terraform_outputs.domain.value) }}"
 
 - name: Connecting to OpenShift - Can Take up to 7-15 Minutes
   community.okd.openshift_auth:
