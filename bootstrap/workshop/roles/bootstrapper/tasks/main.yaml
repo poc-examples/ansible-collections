@@ -18,15 +18,9 @@
     - cluster.create is defined
     - cluster.create == true
 
-- debug:
-    msg: "{{ terraform_outputs[cluster.name + '_domain']['value'] }}"
-
 - name: Fetch OpenShift Domain
   ansible.builtin.set_fact:
     openshift_domain: "{{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}"
-
-- debug:
-    msg: "Domain: {{ openshift_domain }}"
 
 - name: Connecting to OpenShift - Can Take up to 7-15 Minutes
   community.okd.openshift_auth:
@@ -100,10 +94,10 @@
     token: "{{ login.openshift_auth.api_key }}"
     validate_certs: "{{ cluster.validate_certs }}"
     secrets: "{{ cluster.secrets }}"
-    rosa_token: "{{ cluster.offline_token }}"
+    rosa_token: "{{ cluster.providerCredentials.rosa_token }}"
     aws_credentials:
-      AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
-      AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+      AWS_ACCESS_KEY_ID: "{{ cluster.providerCredentials.aws_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ cluster.providerCredentials.aws_secret_access_key }}"
   ansible.builtin.import_role:
     name: secrets-manager
 

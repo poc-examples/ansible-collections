@@ -181,7 +181,7 @@
           cluster: default
           cluster_name: "{{ cluster.cluster_name | default(cluster.name)}}"
           version: "{{ cluster.version | default('not_available') }}"
-          region: "{{ cluster.region | default('not_available')}}"
+          region: "{{ cluster.providerCredentials.region | default('not_available')}}"
           domain: "apps.{{ domain }}"
       stringData:
         config: '{"tlsClientConfig":{"insecure":false}}'
