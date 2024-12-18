@@ -1,8 +1,3 @@
-- debug:
-    msg: |
-      Cluster Type: {{ (cluster.type != "local") }}
-      Cluster Create: {{ (cluster.create == true) }}
-
 - name: Fetch Terraform State
   ansible.builtin.shell:
     cmd: "terraform output -json"
@@ -22,6 +17,9 @@
     - cluster.type != "local"
     - cluster.create is defined
     - cluster.create == true
+
+- debug:
+    msg: "{{ terraform_outputs }}"
 
 - debug:
     msg: "Cluster Create: {{ cluster.create }}"
