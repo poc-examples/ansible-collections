@@ -23,7 +23,7 @@
     msg: "Cluster Create: {{ cluster.create }}"
 
 - debug:
-    msg: "Domain: {{ ('domain' in cluster) | ternary(terraform_outputs.domain.value, cluster.domain) }}"
+    msg: "Domain: {{ ('domain' in cluster) | ternary(terraform_outputs.domain.value, cluster | json_query('domain')) }}"
 
 - name: Fetch OpenShift Domain
   ansible.builtin.set_fact:
