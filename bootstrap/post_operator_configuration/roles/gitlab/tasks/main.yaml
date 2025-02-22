@@ -148,7 +148,8 @@
     body: >
         {
         "name": "self-provisioned",
-        "path": "self-provisioned"
+        "path": "self-provisioned",
+        "visibility": "internal"
         }
   register: result
   until: result.status != 403
