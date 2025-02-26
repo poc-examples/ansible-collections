@@ -129,7 +129,7 @@
     - aws_credentials.AWS_SECRET_ACCESS_KEY is defined
     - aws_credentials.AWS_SECRET_ACCESS_KEY != ""
 
-- name: Secrets Manager - Create Keycloak Initial Admin Password
+- name: Secrets Manager - Create Keycloak Initial Lab Users
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
