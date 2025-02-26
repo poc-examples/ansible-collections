@@ -79,15 +79,27 @@
     realm: "{{ config.client.client_id }}"
   register: group
 
-- name: Create initial admin user
-  community.general.keycloak_user:
-    auth_client_id: "admin-cli"
-    auth_keycloak_url: https://keycloak-keycloak.{{ domain }}/auth
-    auth_realm: master
-    auth_username: "{{ config.idp.username }}"
-    auth_password: "{{ config.idp.password }}"
-    realm: "{{ config.client.client_id }}"
-    username: admin
-    groups:
-      - name: cluster-admins
-        state: present
+- name: Retrieve Keycloak Initial Users Secret
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: keycloak-initial-users
+    namespace: keycloak
+  register: keycloak_secret
+
+- debug:
+    msg: "{{ keycloak_secret }}"
+
+
+# - name: Create initial keycloak users
+#   community.general.keycloak_user:
+#     auth_client_id: "admin-cli"
+#     auth_keycloak_url: https://keycloak-keycloak.{{ domain }}/auth
+#     auth_realm: master
+#     auth_username: "{{ config.idp.username }}"
+#     auth_password: "{{ config.idp.password }}"
+#     realm: "{{ config.client.client_id }}"
+#     username: admin
+#     groups:
+#       - name: cluster-admins
+#         state: present
