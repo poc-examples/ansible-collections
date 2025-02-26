@@ -138,14 +138,10 @@
       apiVersion: v1
       kind: Secret
       metadata:
-        name: "keycloak-{{ user.username }}-password"
+        name: "keycloak-initial-users"
         namespace: "secrets-manager"
       stringData:
-        password: "{{ user.password }}"
-  loop: "{{ keycloak_users }}"
-  loop_control:
-    loop_var: user
-  no_log: true
+        users: "{{ keycloak_users }}"
 
 - name: Secrets Manager - Create Secrets
   community.okd.k8s:
