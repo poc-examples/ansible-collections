@@ -98,6 +98,7 @@
     aws_credentials:
       AWS_ACCESS_KEY_ID: "{{ cluster.providerCredentials.aws_access_key_id }}"
       AWS_SECRET_ACCESS_KEY: "{{ cluster.providerCredentials.aws_secret_access_key }}"
+    keycloak_users: "{{ credentials.users }}"
   ansible.builtin.import_role:
     name: secrets-manager
 
