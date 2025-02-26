@@ -87,8 +87,12 @@
     namespace: keycloak
   register: keycloak_secret
 
+- name: Extract and Decode Users from Secret
+  set_fact:
+    keycloak_users: "{{ (keycloak_secret.resources[0].data.users | b64decode) | from_json }}"
+
 - debug:
-    msg: "{{ keycloak_secret }}"
+    msg: "{{ keycloak_users }}"
 
 
 # - name: Create initial keycloak users
