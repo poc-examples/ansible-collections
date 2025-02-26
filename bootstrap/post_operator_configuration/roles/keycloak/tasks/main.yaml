@@ -75,7 +75,7 @@
     auth_realm: master
     auth_username: "{{ config.idp.username }}"
     auth_password: "{{ config.idp.password }}"
-    name: cluster-admin
+    name: cluster-admins
     realm: "{{ config.client.client_id }}"
   register: group
 
@@ -103,6 +103,7 @@
     first_name: "{{ user.username }}"
     last_name: "system"
     email: "{{ user.username }}@openshift.com"
+    emailVerified: true
     enabled: true
     groups:
       - name: "{{ user.group }}"
