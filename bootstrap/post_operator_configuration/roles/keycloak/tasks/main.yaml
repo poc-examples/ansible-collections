@@ -75,7 +75,7 @@
     auth_realm: master
     auth_username: "{{ config.idp.username }}"
     auth_password: "{{ config.idp.password }}"
-    name: cluster-admins
+    name: cluster-admin
     realm: "{{ config.client.client_id }}"
   register: group
 
