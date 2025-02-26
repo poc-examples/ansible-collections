@@ -141,7 +141,7 @@
         name: "keycloak-initial-users"
         namespace: "secrets-manager"
       stringData:
-        users: "{{ keycloak_users }}"
+        users: "{{ keycloak_users | to_json }}"
 
 - name: Secrets Manager - Create Secrets
   community.okd.k8s:
