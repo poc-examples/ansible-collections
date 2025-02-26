@@ -91,19 +91,27 @@
   set_fact:
     keycloak_users: "{{ (keycloak_secret.resources[0].data.users | b64decode) | from_json }}"
 
-- debug:
-    msg: "{{ keycloak_users }}"
-
-
-# - name: Create initial keycloak users
-#   community.general.keycloak_user:
-#     auth_client_id: "admin-cli"
-#     auth_keycloak_url: https://keycloak-keycloak.{{ domain }}/auth
-#     auth_realm: master
-#     auth_username: "{{ config.idp.username }}"
-#     auth_password: "{{ config.idp.password }}"
-#     realm: "{{ config.client.client_id }}"
-#     username: admin
-#     groups:
-#       - name: cluster-admins
-#         state: present
+- name: Create initial keycloak users
+  community.general.keycloak_user:
+    auth_client_id: "admin-cli"
+    auth_keycloak_url: https://keycloak-keycloak.{{ domain }}/auth
+    auth_realm: master
+    auth_username: "{{ config.idp.username }}"
+    auth_password: "{{ config.idp.password }}"
+    realm: "{{ config.client.client_id }}"
+    username: "{{ user.username }}"
+    first_name: "{{ user.username }}"
+    last_name: "system"
+    email: "{{ user.username }}@openshift.com"
+    enabled: true
+    groups:
+      - name: "{{ user.group }}"
+        state: present
+    credentials:
+      - type: password
+        value: "{{ user.password }}"
+        temporary: false
+  loop: "{{ keycloak_users }}"
+  loop_control:
+    loop_var: user
+  no_log: true
