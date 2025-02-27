@@ -288,36 +288,36 @@
 # FOR GITLAB... THIS SHOWS HOW TO FETCH ONE AND PATCH THE ARGOCD-TLS SETTINGS
 
 # OTHER OPTIONS MIGHT BE TO USE KYVERNO
-- name: Get GitLab Wildcard TLS CA Secret
-  community.kubernetes.k8s_info:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    api_version: v1
-    kind: Secret
-    name: "gitlab-wildcard-tls-ca"
-    namespace: "gitlab-system"
-  register: gitlab_tls_secret
+# - name: Get GitLab Wildcard TLS CA Secret
+#   community.kubernetes.k8s_info:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     api_version: v1
+#     kind: Secret
+#     name: "gitlab-wildcard-tls-ca"
+#     namespace: "gitlab-system"
+#   register: gitlab_tls_secret
 
-- name: Decode cfssl_ca from the Secret
-  set_fact:
-    cfssl_ca: "{{ gitlab_tls_secret.resources[0].data.cfssl_ca | b64decode }}"
+# - name: Decode cfssl_ca from the Secret
+#   set_fact:
+#     cfssl_ca: "{{ gitlab_tls_secret.resources[0].data.cfssl_ca | b64decode }}"
 
-- name: Generate ConfigMap YAML from template
-  template:
-    src: configmap.j2
-    dest: /tmp/configmap.yaml
+# - name: Generate ConfigMap YAML from template
+#   template:
+#     src: configmap.j2
+#     dest: /tmp/configmap.yaml
 
-- name: Apply ArgoCD TLS ConfigMap
-  community.kubernetes.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition: "{{ lookup('file', '/tmp/configmap.yaml') }}"
-    merge_type:
-      - merge
-  register: patch_result
+# - name: Apply ArgoCD TLS ConfigMap
+#   community.kubernetes.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition: "{{ lookup('file', '/tmp/configmap.yaml') }}"
+#     merge_type:
+#       - merge
+#   register: patch_result
 
-- name: Debug Patch Result
-  debug:
-    msg: "ConfigMap patched successfully: {{ patch_result }}"
+# - name: Debug Patch Result
+#   debug:
+#     msg: "ConfigMap patched successfully: {{ patch_result }}"
