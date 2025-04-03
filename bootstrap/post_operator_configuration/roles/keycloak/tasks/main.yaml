@@ -88,7 +88,7 @@
   when: not is_rosa
   block:
     - debug:
-        - msg: "not rosa"
+        msg: "not rosa"
 
     # - name: Patch OAuth config to include Keycloak IdP
     #   kubernetes.core.k8s:
