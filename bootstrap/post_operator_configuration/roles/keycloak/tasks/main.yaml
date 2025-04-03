@@ -90,6 +90,9 @@
     - debug:
         msg: "not rosa"
 
+    # CREATE SECRET
+    # - name:
+
     # - name: Patch OAuth config to include Keycloak IdP
     #   kubernetes.core.k8s:
     #     definition:
@@ -97,6 +100,7 @@
     #       kind: OAuth
     #       metadata:
     #         name: cluster
+    #         namespace: openshift-config
     #       spec:
     #         identityProviders:
     #           - name: "{{ config.client.client_id }}"
@@ -120,6 +124,7 @@
   community.general.keycloak_group:
     auth_client_id: "admin-cli"
     auth_keycloak_url: https://keycloak-keycloak.{{ domain }}/auth
+    validate_certs: false
     auth_realm: master
     auth_username: "{{ config.idp.username }}"
     auth_password: "{{ config.idp.password }}"
@@ -143,6 +148,7 @@
   community.general.keycloak_user:
     auth_client_id: "admin-cli"
     auth_keycloak_url: https://keycloak-keycloak.{{ domain }}/auth
+    validate_certs: false
     auth_realm: master
     auth_username: "{{ config.idp.username }}"
     auth_password: "{{ config.idp.password }}"
