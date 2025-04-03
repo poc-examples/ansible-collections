@@ -14,8 +14,20 @@
         username: "{{ lookup('env', 'ADMIN_USERNAME') }}"
         password: "{{ lookup('env', 'ADMIN_PASSWORD') }}"
         issuer_url: https://keycloak-keycloak.{{ domain }}/auth/realms/{{ lookup('env', 'CLIENT_ID') }}
-# - debug:
-#     msg: "{{ config.cluster.rosa_token }}"
+
+- name: Get cluster infrastructure info
+  kubernetes.core.k8s_info:
+    api_version: config.openshift.io/v1
+    kind: Infrastructure
+    name: cluster
+  register: infra_result
+
+- name: Set ROSA detection fact
+  set_fact:
+    is_rosa: "{{ infra_result.resources[0].status.platform | lower == 'aws' }}"
+
+- debug:
+    msg: "{{ is_rosa }}"
 
 - name: Log ROSA Version
   command: rosa version
