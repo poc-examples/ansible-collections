@@ -155,9 +155,25 @@
           kubectl:
             parallelism:
               limit: "30"
+          # BOOST THESE BASED ON CONTROLLER LOAD
+          resources:
+            limits:
+              cpu: '1'
+              memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 1Gi
+          sharding:
+            enabled: true
+            replicas: 2
+
         applicationSet:
           extraCommandArgs:
             - "--enable-progressive-syncs"
+          # BOOST THESE BASED ON APP CONTROLLER LOAD
+          sharding:
+            enabled: true
+            replicas: 2
         server:
           route:
             enabled: true
