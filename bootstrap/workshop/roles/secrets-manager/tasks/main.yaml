@@ -1,5 +1,10 @@
 ---
 
+- name: Set Secrets Management Parameters
+  set_fact:
+    vault_token: "{{ secrets.vault.token | default('root', true) }}"
+    namespace: "secrets-manager"
+
 - name: Ensure Secrets Manager Namespace
   kubernetes.core.k8s:
     host: "{{ api_url }}"
@@ -9,7 +14,7 @@
       apiVersion: v1
       kind: Namespace
       metadata:
-        name: "secrets-manager"
+        name: "{{ namespace }}"
 
 - name: Ensure Service Account for Secrets Access
   kubernetes.core.k8s:
@@ -21,7 +26,7 @@
       kind: ServiceAccount
       metadata:
         name: external-secrets-kubeaccess-sa
-        namespace: secrets-manager
+        namespace: "{{ namespace }}"
 
 - name: Ensure Service Account RBAC
   kubernetes.core.k8s:
@@ -33,7 +38,7 @@
       kind: Role
       metadata:
         name: secrets-access
-        namespace: secrets-manager
+        namespace: "{{ namespace }}"
       rules:
         - apiGroups:
             - ""
@@ -60,19 +65,15 @@
       kind: RoleBinding
       metadata:
         name: secrets-access-binding
-        namespace: secrets-manager
+        namespace: "{{ namespace }}"
       subjects:
         - kind: ServiceAccount
           name: external-secrets-kubeaccess-sa
-          namespace: secrets-manager
+          namespace: "{{ namespace }}"
       roleRef:
         kind: Role
         name: secrets-access
         apiGroup: rbac.authorization.k8s.io
-
-- name: Set Vault Token
-  set_fact:
-    vault_token: "{{ secrets.vault.token | default('root', true) }}"
 
 - name: Ensure Admin Vault Credentials
   community.okd.k8s:
@@ -84,7 +85,7 @@
       kind: Secret
       metadata:
         name: vault-token
-        namespace: "secrets-manager"
+        namespace: "{{ namespace }}"
       stringData:
         token: "{{ vault_token }}"
   when:
@@ -101,7 +102,7 @@
       kind: Secret
       metadata:
         name: rosa-token
-        namespace: "secrets-manager"
+        namespace: "{{ namespace }}"
       stringData:
         token: "{{ rosa_token }}"
   when:
@@ -118,7 +119,7 @@
       kind: Secret
       metadata:
         name: aws-credentials
-        namespace: "secrets-manager"
+        namespace: "{{ namespace }}"
       stringData:
         AWS_ACCESS_KEY_ID: "{{ aws_credentials.AWS_ACCESS_KEY_ID }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_credentials.AWS_SECRET_ACCESS_KEY }}"
@@ -139,7 +140,7 @@
       kind: Secret
       metadata:
         name: "keycloak-initial-users"
-        namespace: "secrets-manager"
+        namespace: "{{ namespace }}"
       stringData:
         users: "{{ keycloak_users | to_json }}"
 
@@ -153,7 +154,7 @@
       kind: Secret
       metadata:
         name: "{{ item.name }}"
-        namespace: "secrets-manager"
+        namespace: "{{ namespace }}"
       stringData: "{{ item.secrets }}"
   loop: "{{ secrets.pushSecrets | default([])}}"
   no_log: true
