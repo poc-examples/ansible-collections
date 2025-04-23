@@ -163,17 +163,24 @@
             requests:
               cpu: 250m
               memory: 1Gi
-          sharding:
-            enabled: true
-            replicas: 2
+          # sharding:
+          #   enabled: true
+          #   replicas: 2
 
         applicationSet:
           extraCommandArgs:
             - "--enable-progressive-syncs"
           # BOOST THESE BASED ON APP CONTROLLER LOAD
-          sharding:
-            enabled: true
-            replicas: 2
+          resources:
+            limits:
+              cpu: '1'
+              memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 1Gi
+          # sharding:
+          #   enabled: true
+          #   replicas: 2
         server:
           route:
             enabled: true
@@ -199,6 +206,7 @@
           version: "{{ cluster.version | default('not_available') }}"
           region: "{{ cluster.providerCredentials.region | default('not_available')}}"
           domain: "apps.{{ domain }}"
+          shared_domain: ""
       stringData:
         config: '{"tlsClientConfig":{"insecure":false}}'
         name: "default"

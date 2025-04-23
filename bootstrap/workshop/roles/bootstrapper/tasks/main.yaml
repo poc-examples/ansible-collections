@@ -21,6 +21,15 @@
 - name: Fetch OpenShift Domain
   ansible.builtin.set_fact:
     openshift_domain: "{{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}"
+    
+- name: Map Shared Cluster Domain
+  ansible.builtin.set_fact:
+    shared_cluster:
+      enabled: "{{ cluster.workshop.sharedClusterRef is defined | bool }}"
+      domain: "{{ cluster['shared_domain'] | default(terraform_outputs[cluster.workshop.sharedClusterRef + '_domain']['value'], true) }}"
+
+- debug:
+    msg: "{{ shared_cluster }}"
 
 - name: Set Default Cluster Parameters
   ansible.builtin.set_fact:
