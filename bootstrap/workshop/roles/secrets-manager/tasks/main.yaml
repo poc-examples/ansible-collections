@@ -155,5 +155,5 @@
         name: "{{ item.name }}"
         namespace: "secrets-manager"
       stringData: "{{ item.secrets }}"
-  loop: "{{ secrets.pushSecrets }}"
+  loop: "{{ secrets.pushSecrets | default([])}}"
   no_log: true
