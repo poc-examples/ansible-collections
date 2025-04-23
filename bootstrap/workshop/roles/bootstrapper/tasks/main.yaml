@@ -22,9 +22,14 @@
   ansible.builtin.set_fact:
     openshift_domain: "{{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}"
 
+- name: Set Default Cluster Parameters
+  ansible.builtin.set_fact:
+    validate_certs: "{{ cluster.validate_certs | default(false) }}"
+    cluster_api_url: "https://api.{{ openshift_domain }}:6443"
+
 - name: Connecting to OpenShift - Can Take up to 7-15 Minutes
   community.okd.openshift_auth:
-    host: "https://api.{{ openshift_domain }}:6443"
+    host: "{{ cluster_api_url }}"
     username: "{{ credentials.admin.username }}"
     password: "{{ credentials.admin.password }}"
     verify_ssl: false
@@ -34,9 +39,9 @@
 
 - name: Waiting for OpenShift Healthy State - Can Take up to 12-15 Minutes
   community.kubernetes.k8s_info:
-    host: "https://api.{{ openshift_domain }}:6443"
+    host: "{{ cluster_api_url }}"
     api_key: "{{ login.openshift_auth.api_key }}"
-    validate_certs: "{{ cluster.validate_certs }}"
+    validate_certs: "{{ validate_certs }}"
     api_version: v1
     kind: Pod
   register: pod_info
@@ -49,9 +54,9 @@
 
 - name: Fetch Cluster Ingress
   community.kubernetes.k8s_info:
-    host: "https://api.{{ openshift_domain }}:6443"
+    host: "{{ cluster_api_url }}"
     api_key: "{{ login.openshift_auth.api_key }}"
-    validate_certs: "{{ cluster.validate_certs }}"
+    validate_certs: "{{ validate_certs }}"
     api_version: config.openshift.io/v1
     kind: Ingress
     name: cluster
@@ -63,9 +68,9 @@
 
 - name: Install OpenShift-GitOps Operator
   vars:
-    api_url: "https://api.{{ openshift_domain }}:6443"
+    api_url: "{{ cluster_api_url }}"
     token: "{{ login.openshift_auth.api_key }}"
-    validate_certs: "{{ cluster.validate_certs }}"
+    validate_certs: "{{ validate_certs }}"
     gitops: "{{ cluster.gitops }}"
   ansible.builtin.include_role:
     name: gitops-operator
@@ -76,9 +81,9 @@
 - name: Configure OpenShift-GitOps Instance
   vars:
     domain: "{{ ingress_domain }}"
-    api_url: "https://api.{{ openshift_domain }}:6443"
+    api_url: "{{ cluster_api_url }}"
     token: "{{ login.openshift_auth.api_key }}"
-    validate_certs: "{{ cluster.validate_certs }}"
+    validate_certs: "{{ validate_certs }}"
     gitops: "{{ cluster.gitops }}"
     workshop: "{{ cluster.workshop }}"
     # cluster: "{{ cluster }}"
@@ -90,9 +95,9 @@
 
 - name: Secrets Management
   vars:
-    api_url: "https://api.{{ openshift_domain }}:6443"
+    api_url: "{{ cluster_api_url }}"
     token: "{{ login.openshift_auth.api_key }}"
-    validate_certs: "{{ cluster.validate_certs }}"
+    validate_certs: "{{ validate_certs }}"
     secrets: "{{ cluster.secrets }}"
     rosa_token: "{{ cluster.providerCredentials.rosa_token }}"
     aws_credentials:
