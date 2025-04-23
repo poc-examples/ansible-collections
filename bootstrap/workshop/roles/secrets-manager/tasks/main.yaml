@@ -4,6 +4,7 @@
   set_fact:
     vault_token: "{{ secrets.vault.token | default('root', true) }}"
     target_namespace: "secrets-manager"
+    vault_enabled: "{{ secrets.vault.enabled | default(true) }}"
 
 - name: Ensure Secrets Manager Namespace
   kubernetes.core.k8s:
@@ -89,8 +90,7 @@
       stringData:
         token: "{{ vault_token }}"
   when:
-    - secrets.vault.enabled is defined
-    - secrets.vault.enabled is true
+    - vault_enabled is true
 
 - name: Ensure ROSA Credentials
   community.okd.k8s:
