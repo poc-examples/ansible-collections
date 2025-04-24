@@ -206,7 +206,7 @@
           version: "{{ cluster.version | default('not_available') }}"
           region: "{{ cluster.providerCredentials.region | default('not_available')}}"
           domain: "apps.{{ domain }}"
-          is_shared: ""
+          is_shared: "{{ workshop.chart.settings.role == shared | bool }}"
           shared_domain: "apps.{{ shared_cluster.ingress_domain }}"
       stringData:
         config: '{"tlsClientConfig":{"insecure":false}}'
