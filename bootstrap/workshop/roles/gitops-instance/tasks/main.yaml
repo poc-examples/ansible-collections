@@ -200,8 +200,8 @@
         namespace: "openshift-gitops"
         # Best for Unstructured Metadata like relationships
         annotations:
-          shared_domain: "{{ shared_cluster.enabled | default(false) | bool | ternary('apps.' ~ shared_cluster.ingress_domain, '') }}"
-          has_shared: "{{ shared_cluster.enabled | default('False') | string }}"
+          shared_domain: "{{ shared_cluster_enabled | ternary('apps.' ~ shared_cluster.ingress_domain, '') }}"
+          has_shared: "{{ shared_cluster_enabled | string }}"
         # Keep this for information about this cluster
         labels:
           argocd.argoproj.io/secret-type: cluster

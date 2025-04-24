@@ -59,7 +59,6 @@
     - name: Map Shared Cluster Ingress
       ansible.builtin.set_fact:
         shared_cluster:
-          enabled: "{{ shared_cluster_enabled | bool }}"
           domain: "{{ shared_cluster_domain }}"
           ingress_domain: "{{ ingress_info.resources[0].spec.domain | regex_replace('^apps\\.', '') }}"
 
