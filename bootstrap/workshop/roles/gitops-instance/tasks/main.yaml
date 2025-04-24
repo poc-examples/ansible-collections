@@ -198,6 +198,11 @@
       metadata:
         name: "default-cluster"
         namespace: "openshift-gitops"
+        # Best for Unstructured Metadata like relationships
+        annotations:
+          role: "{{ workshop.chart.settings.role }}"
+          shared_domain: "apps.{{ shared_cluster.ingress_domain }}"
+        # Keep this for information about this cluster
         labels:
           argocd.argoproj.io/secret-type: cluster
           type: "{{ cluster.type }}"
@@ -206,8 +211,6 @@
           version: "{{ cluster.version | default('not_available') }}"
           region: "{{ cluster.providerCredentials.region | default('not_available')}}"
           domain: "apps.{{ domain }}"
-          role: "{{ workshop.chart.settings.role }}"
-          shared_domain: "apps.{{ shared_cluster.ingress_domain }}"
       stringData:
         config: '{"tlsClientConfig":{"insecure":false}}'
         name: "default"
