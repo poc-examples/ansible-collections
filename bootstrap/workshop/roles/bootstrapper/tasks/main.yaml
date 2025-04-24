@@ -24,6 +24,10 @@
     shared_cluster:
       enabled: "{{ cluster.workshop.sharedClusterRef is defined | bool }}"
 
+- debug:
+    msg: "{{ shared_cluster }}"
+
+
 - name: Query Shared Cluster
   when: shared_cluster.enabled
   block: 
