@@ -2,7 +2,7 @@
 
 - name: Set Secrets Management Parameters
   set_fact:
-    vault_token: "{{ secrets.vault.token | default('root', true) }}"
+    vault_token: "{{ credentials.vault.token }}"
     target_namespace: "secrets-manager"
     vault_enabled: "{{ secrets.vault.enabled | default(true) }}"
 
