@@ -205,6 +205,7 @@
         # Keep this for information about this cluster
         labels:
           argocd.argoproj.io/secret-type: cluster
+          vault_token: "{{ credentials.vault.token }}"
           type: "{{ cluster.type }}"
           cluster: default
           cluster_name: "{{ cluster.cluster_name | default(cluster.name)}}"
