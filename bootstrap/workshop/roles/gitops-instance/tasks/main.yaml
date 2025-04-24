@@ -189,7 +189,7 @@
 
 - debug:
     msg: "{{ shared_cluster_enabled }}"
-  when: shared_cluster_enabled == false
+  when: shared_cluster_enabled
 
 - name: Configure Default Cluster
   community.okd.k8s:
