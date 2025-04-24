@@ -201,7 +201,7 @@
         # Best for Unstructured Metadata like relationships
         annotations:
           shared_domain: "apps.{{ shared_cluster.ingress_domain }}"
-          has_shared: "{{ shared_cluster.enabled }}"
+          has_shared: "{{ shared_cluster.enabled | string }}"
         # Keep this for information about this cluster
         labels:
           argocd.argoproj.io/secret-type: cluster
