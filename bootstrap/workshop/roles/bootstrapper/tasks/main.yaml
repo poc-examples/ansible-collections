@@ -24,9 +24,6 @@
     openshift_domain: "{{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}"
     shared_cluster_enabled: "{{ cluster.workshop.sharedClusterRef is defined | bool }}"
 
-- debug:
-    msg: "Shared Cluster Enabled: {{ shared_cluster_enabled }}"
-
 - name: Query Shared Cluster
   when: shared_cluster_enabled == true
   block: 
@@ -69,52 +66,52 @@
     - debug:
         msg: "{{ shared_cluster }}"
 
-# - name: Set Default Cluster Parameters
-#   ansible.builtin.set_fact:
-#     cluster_api_url: "https://api.{{ openshift_domain }}:6443"
-#     gitops:
-#       enabled: "{{ cluster.workshop.gitops.enabled | default(true) }}"
-#       channel: gitops-1.14
-#       namespace: openshift-gitops
+- name: Set Default Cluster Parameters
+  ansible.builtin.set_fact:
+    cluster_api_url: "https://api.{{ openshift_domain }}:6443"
+    gitops:
+      enabled: "{{ cluster.workshop.gitops.enabled | default(true) }}"
+      channel: gitops-1.14
+      namespace: openshift-gitops
 
-# - name: Connecting to OpenShift - Can Take up to 7-15 Minutes
-#   community.okd.openshift_auth:
-#     host: "{{ cluster_api_url }}"
-#     username: "{{ credentials.admin.username }}"
-#     password: "{{ credentials.admin.password }}"
-#     verify_ssl: false
-#   register: login
-#   retries: 45
-#   delay: 30
+- name: Connecting to OpenShift - Can Take up to 7-15 Minutes
+  community.okd.openshift_auth:
+    host: "{{ cluster_api_url }}"
+    username: "{{ credentials.admin.username }}"
+    password: "{{ credentials.admin.password }}"
+    verify_ssl: false
+  register: login
+  retries: 45
+  delay: 30
 
-# - name: Waiting for OpenShift Healthy State - Can Take up to 12-15 Minutes
-#   community.kubernetes.k8s_info:
-#     host: "{{ cluster_api_url }}"
-#     api_key: "{{ login.openshift_auth.api_key }}"
-#     validate_certs: "{{ validate_certs }}"
-#     api_version: v1
-#     kind: Pod
-#   register: pod_info
-#   until:
-#     - pod_info.resources is defined
-#     - pod_info.resources | length > 0
-#     - pod_info.resources | selectattr('status.phase', 'equalto', 'Pending') | length == 0
-#   retries: 40
-#   delay: 30
+- name: Waiting for OpenShift Healthy State - Can Take up to 12-15 Minutes
+  community.kubernetes.k8s_info:
+    host: "{{ cluster_api_url }}"
+    api_key: "{{ login.openshift_auth.api_key }}"
+    validate_certs: "{{ validate_certs }}"
+    api_version: v1
+    kind: Pod
+  register: pod_info
+  until:
+    - pod_info.resources is defined
+    - pod_info.resources | length > 0
+    - pod_info.resources | selectattr('status.phase', 'equalto', 'Pending') | length == 0
+  retries: 40
+  delay: 30
 
-# - name: Fetch Cluster Ingress
-#   community.kubernetes.k8s_info:
-#     host: "{{ cluster_api_url }}"
-#     api_key: "{{ login.openshift_auth.api_key }}"
-#     validate_certs: "{{ validate_certs }}"
-#     api_version: config.openshift.io/v1
-#     kind: Ingress
-#     name: cluster
-#   register: ingress_info
+- name: Fetch Cluster Ingress
+  community.kubernetes.k8s_info:
+    host: "{{ cluster_api_url }}"
+    api_key: "{{ login.openshift_auth.api_key }}"
+    validate_certs: "{{ validate_certs }}"
+    api_version: config.openshift.io/v1
+    kind: Ingress
+    name: cluster
+  register: ingress_info
 
-# - name: Get Domain from Cluster Ingress
-#   set_fact:
-#     ingress_domain: "{{ ingress_info.resources[0].spec.domain | regex_replace('^apps\\.', '') }}"
+- name: Get Domain from Cluster Ingress
+  set_fact:
+    ingress_domain: "{{ ingress_info.resources[0].spec.domain | regex_replace('^apps\\.', '') }}"
 
 # - name: Install OpenShift-GitOps Operator
 #   vars:
