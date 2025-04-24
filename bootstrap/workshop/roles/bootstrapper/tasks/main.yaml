@@ -29,7 +29,7 @@
 
 
 - name: Query Shared Cluster
-  when: shared_cluster.enabled
+  when: shared_cluster.enabled == true
   block: 
 
     - name: Map Shared Cluster Domain
