@@ -187,10 +187,6 @@
           insecure: true
         kustomizeBuildOptions: '--enable-helm'
 
-- debug:
-    msg: "{{ shared_cluster_enabled }}"
-  when: shared_cluster_enabled
-
 - name: Configure Default Cluster
   community.okd.k8s:
     host: "{{ api_url }}"
