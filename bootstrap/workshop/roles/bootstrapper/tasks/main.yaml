@@ -32,6 +32,10 @@
       ansible.builtin.set_fact:
         shared_cluster:
           domain: "{{ cluster['shared_domain'] | default(terraform_outputs[cluster.workshop.sharedClusterRef + '_domain']['value'], true) }}"
+
+    - name: Map Shared Cluster API URL
+      ansible.builtin.set_fact:
+        shared_cluster:
           api_url: "https://api.{{ shared_cluster.domain }}:6443"
 
     - name: Connecting Shared Cluster - Can Take up to 7-15 Minutes
@@ -54,7 +58,7 @@
         name: cluster
       register: ingress_info
 
-    - name: Map Shared Cluster Domain
+    - name: Map Shared Cluster Ingress
       ansible.builtin.set_fact:
         shared_cluster:
           ingress_domain: "{{ ingress_info.resources[0].spec.domain | regex_replace('^apps\\.', '') }}"
