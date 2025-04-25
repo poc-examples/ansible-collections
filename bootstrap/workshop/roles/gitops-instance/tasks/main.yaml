@@ -261,7 +261,9 @@
           repoURL: "{{ workshop.chart.repo }}"
           targetRevision: "{{ workshop.chart.version }}"
           helm:
-            valuesObject: null
+            parameters:
+              - name: shared.enabled
+                value: "{{ shared_cluster_enabled | string }}"
         project: default
         timeout: 120
         syncPolicy:
