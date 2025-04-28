@@ -273,7 +273,7 @@
             values: |
               shared:
                 enabled: {{ shared_cluster_enabled | string }}
-              {{ rendered_clusters | indent(14) }}
+              {{ rendered_clusters | indent(10) }}
         project: default
         timeout: 120
         syncPolicy:
