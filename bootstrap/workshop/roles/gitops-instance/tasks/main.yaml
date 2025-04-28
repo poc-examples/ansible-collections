@@ -241,6 +241,15 @@
         i18n:
           loadType: Preload
 
+- name: Build list of clusters for Helm values
+  ansible.builtin.set_fact:
+    rendered_clusters: |
+      clusters:
+      {% for cluster in openshift.clusters %}
+        - name: {{ cluster.name }}
+          stage: {{ cluster.workshop.chart.settings.stage }}
+      {% endfor %}
+
 - name: Create WorkShop Application
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -264,6 +273,7 @@
             values: |
               shared:
                 enabled: {{ shared_cluster_enabled | string }}
+              {{ rendered_clusters | indent(14) }}
         project: default
         timeout: 120
         syncPolicy:
