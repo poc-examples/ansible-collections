@@ -188,37 +188,38 @@
           insecure: true
         kustomizeBuildOptions: '--enable-helm'
 
-# - name: Configure Default Cluster
-#   community.okd.k8s:
-#     host: "{{ api_url }}"
-#     api_key: "{{ token }}"
-#     validate_certs: "{{ validate_certs }}"
-#     definition:
-#       apiVersion: v1
-#       kind: Secret
-#       metadata:
-#         name: "default-cluster"
-#         namespace: "openshift-gitops"
-#         # Best for Unstructured Metadata like relationships
-#         annotations:
-#           shared_domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, '') }}"
-#           has_shared: "{{ shared_cluster_enabled | string }}"
-#         # Keep this for information about this cluster
-#         labels:
-#           argocd.argoproj.io/secret-type: cluster
-#           vault_token: "{{ credentials.vault.token }}"
-#           type: "{{ cluster.type }}"
-#           cluster: default
-#           cluster_name: "{{ cluster.cluster_name | default(cluster.name)}}"
-#           version: "{{ cluster.version | default('not_available') }}"
-#           region: "{{ cluster.providerCredentials.region | default('not_available')}}"
-#           domain: "apps.{{ domain }}"
-#           role: "{{ workshop.chart.settings.role }}"
-#       stringData:
-#         config: '{"tlsClientConfig":{"insecure":false}}'
-#         name: "default"
-#         nameNormalized: "default"
-#         server: "https://kubernetes.default.svc"
+- name: Configure Default Cluster
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "default-cluster"
+        namespace: "openshift-gitops"
+        # Best for Unstructured Metadata like relationships
+        annotations:
+          shared_domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, '') }}"
+          has_shared: "{{ shared_cluster_enabled | string }}"
+        # Keep this for information about this cluster
+        labels:
+          argocd.argoproj.io/secret-type: cluster
+          vault_token: "{{ credentials.vault.token }}"
+          type: "{{ cluster.type }}"
+          cluster: default
+          cluster_name: "{{ cluster.cluster_name | default(cluster.name)}}"
+          version: "{{ cluster.version | default('not_available') }}"
+          region: "{{ cluster.providerCredentials.region | default('not_available')}}"
+          location: "{{ cluster.providerCredentials.location | default('not_available')}}"
+          domain: "apps.{{ domain }}"
+          role: "{{ workshop.chart.settings.role }}"
+      stringData:
+        config: '{"tlsClientConfig":{"insecure":false}}'
+        name: "default"
+        nameNormalized: "default"
+        server: "https://kubernetes.default.svc"
 
 # - name: Configure ArgoCD Plugin
 #   community.okd.k8s:
