@@ -221,27 +221,27 @@
         nameNormalized: "default"
         server: "https://kubernetes.default.svc"
 
-# - name: Configure ArgoCD Plugin
-#   community.okd.k8s:
-#     host: "{{ api_url }}"
-#     api_key: "{{ token }}"
-#     validate_certs: "{{ validate_certs }}"
-#     definition:
-#       apiVersion: console.openshift.io/v1
-#       kind: ConsolePlugin
-#       metadata:
-#         name: gitops-plugin
-#       spec:
-#         backend:
-#           service:
-#             basePath: /
-#             name: gitops-plugin
-#             namespace: "{{ gitops.namespace }}"
-#             port: 9001
-#           type: Service
-#         displayName: GitOps Plugin
-#         i18n:
-#           loadType: Preload
+- name: Configure ArgoCD Plugin
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: console.openshift.io/v1
+      kind: ConsolePlugin
+      metadata:
+        name: gitops-plugin
+      spec:
+        backend:
+          service:
+            basePath: /
+            name: gitops-plugin
+            namespace: "{{ gitops.namespace }}"
+            port: 9001
+          type: Service
+        displayName: GitOps Plugin
+        i18n:
+          loadType: Preload
 
 # - name: Build list of clusters for Helm values
 #   ansible.builtin.set_fact:
