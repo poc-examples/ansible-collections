@@ -142,22 +142,22 @@
         name: aro-credentials
         namespace: "{{ target_namespace }}"
       stringData:
-        CLIENT_ID: "{{ aro-credentials.CLIENT_ID }}"
-        CLIENT_SECRET: "{{ aro-credentials.CLIENT_SECRET }}"
-        SUBSCRIPTION_ID: "{{ aro-credentials.SUBSCRIPTION_ID }}"
-        TENANT_ID: "{{ aro-credentials.TENANT_ID }}"
-        RESOURCE_GROUP_NAME: "{{ aro-credentials.RESOURCE_GROUP_NAME }}"
-        LOCATION: "{{ aro-credentials.LOCATION }}"
+        CLIENT_ID: "{{ aro_credentials.CLIENT_ID }}"
+        CLIENT_SECRET: "{{ aro_credentials.CLIENT_SECRET }}"
+        SUBSCRIPTION_ID: "{{ aro_credentials.SUBSCRIPTION_ID }}"
+        TENANT_ID: "{{ aro_credentials.TENANT_ID }}"
+        RESOURCE_GROUP_NAME: "{{ aro_credentials.RESOURCE_GROUP_NAME }}"
+        LOCATION: "{{ aro_credentials.LOCATION }}"
   when:
-    - aro-credentials is defined
-    - aro-credentials.CLIENT_ID is defined
-    - aro-credentials.CLIENT_ID != ""
-    - aro-credentials.CLIENT_SECRET is defined
-    - aro-credentials.CLIENT_SECRET != ""
-    - aro-credentials.RESOURCE_GROUP_NAME is defined
-    - aro-credentials.RESOURCE_GROUP_NAME != ""
-    - aro-credentials.TENANT_ID is defined
-    - aro-credentials.TENANT_ID != ""
+    - aro_credentials is defined
+    - aro_credentials.CLIENT_ID is defined
+    - aro_credentials.CLIENT_ID != ""
+    - aro_credentials.CLIENT_SECRET is defined
+    - aro_credentials.CLIENT_SECRET != ""
+    - aro_credentials.RESOURCE_GROUP_NAME is defined
+    - aro_credentials.RESOURCE_GROUP_NAME != ""
+    - aro_credentials.TENANT_ID is defined
+    - aro_credentials.TENANT_ID != ""
 
 - name: Secrets Manager - Create Keycloak Initial Lab Users
   community.okd.k8s:
