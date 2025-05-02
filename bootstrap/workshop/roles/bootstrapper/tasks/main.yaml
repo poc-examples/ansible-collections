@@ -65,9 +65,15 @@
               --resource-group {{ cluster.providerCredentials.resource_group_name }}
           register: aro_credential
 
+        - name: Set ARO Credentials
+          ansible.builtin.set_fact:
+            cluster_credentials:
+              username: "{{ (aro_credential.stdout | from_json).kubeadminUsername }}"
+              password: "{{ (aro_credential.stdout | from_json).kubeadminPassword }}"
+
         - name: Debug
           debug:
-            var: aro_credential.stdout
+            var: cluster_credentials
 
       
 
