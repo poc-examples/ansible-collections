@@ -277,6 +277,8 @@
             values: |
               shared:
                 enabled: {{ shared_cluster_enabled | string }}
+              cluster: 
+                type: {{ cluster.type }}
               {{ rendered_clusters }}
         project: default
         timeout: 120
