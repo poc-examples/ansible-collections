@@ -71,9 +71,10 @@
               username: "{{ (aro_credential.stdout | from_json).kubeadminUsername }}"
               password: "{{ (aro_credential.stdout | from_json).kubeadminPassword }}"
 
-        - name: Debug
-          debug:
-            msg: "{{ cluster_credentials }}"
+
+    - name: Debug
+      debug:
+        msg: "{{ cluster_credentials }}"
 
       
 
