@@ -184,16 +184,16 @@
   when:
     - gitops.enabled is true
 
-# - name: Configure OpenShift-GitOps Instance
-#   vars:
-#     domain: "{{ ingress_domain }}"
-#     api_url: "{{ cluster_api_url }}"
-#     token: "{{ login.openshift_auth.api_key }}"
-#     workshop: "{{ cluster.workshop }}"
-#   ansible.builtin.include_role:
-#     name: gitops-instance
-#   when:
-#     - gitops.enabled is true
+- name: Configure OpenShift-GitOps Instance
+  vars:
+    domain: "{{ ingress_domain }}"
+    api_url: "{{ cluster_api_url }}"
+    token: "{{ login.openshift_auth.api_key }}"
+    workshop: "{{ cluster.workshop }}"
+  ansible.builtin.include_role:
+    name: gitops-instance
+  when:
+    - gitops.enabled is true
 
 - name: Secrets Management
   vars:
