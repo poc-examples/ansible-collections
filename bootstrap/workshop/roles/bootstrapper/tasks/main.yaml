@@ -205,7 +205,7 @@
 #   ansible.builtin.import_role:
 #     name: secrets-manager
 
-# - name: Links 
-#   debug:
-#     msg: |
-#       console url: https://console-openshift-console.apps.{{ ingress_domain }}
+- name: Links 
+  debug:
+    msg: |
+      console url: https://console-openshift-console.apps.{{ ingress_domain }}
