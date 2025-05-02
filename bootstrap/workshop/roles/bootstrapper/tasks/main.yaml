@@ -46,6 +46,7 @@
     ## and set them in credentials key in cluster config
     - name: Fetch ARO Credentials
       when:
+        - cluster_credentials is not defined
         - cluster.type == "aro"
       block:
 
