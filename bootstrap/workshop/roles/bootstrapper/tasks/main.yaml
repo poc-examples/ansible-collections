@@ -133,15 +133,15 @@
       channel: gitops-1.14
       namespace: openshift-gitops
 
-# - name: Connecting to OpenShift - Can Take up to 7-15 Minutes
-#   community.okd.openshift_auth:
-#     host: "{{ cluster_api_url }}"
-#     username: "{{ credentials.admin.username }}"
-#     password: "{{ credentials.admin.password }}"
-#     verify_ssl: false
-#   register: login
-#   retries: 45
-#   delay: 30
+- name: Connecting to OpenShift - Can Take up to 7-15 Minutes
+  community.okd.openshift_auth:
+    host: "{{ cluster_api_url }}"
+    username: "{{ credentials.admin.username }}"
+    password: "{{ credentials.admin.password }}"
+    verify_ssl: false
+  register: login
+  retries: 45
+  delay: 30
 
 # - name: Waiting for OpenShift Healthy State - Can Take up to 12-15 Minutes
 #   community.kubernetes.k8s_info:
