@@ -26,12 +26,12 @@
   set_fact:
     is_rosa: "{{ infra_result.resources[0].status.platform | lower == 'aws' }}"
 
-# - debug:
-#     msg: "Is AWS: {{ is_rosa }}"
-
 - name: Patch With ROSA CLI
   when: is_rosa
   block:
+
+    - debug:
+        msg: "Is AWS: {{ is_rosa }}"
 
     - name: Log ROSA Version
       command: rosa version
@@ -87,38 +87,47 @@
 - name: Patch OAuth (OCP/ARO/SNO/etc.)
   when: not is_rosa
   block:
+
     - debug:
         msg: "not rosa"
 
-    # CREATE SECRET
-    # - name:
+    - name: Create Keyclock OAuth Secret
+      community.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: keycloak-client-secret
+            namespace: openshift-config
+          stringData:
+            clientSecret: "{{ config.client.client_secret }}"
 
-    # - name: Patch OAuth config to include Keycloak IdP
-    #   kubernetes.core.k8s:
-    #     definition:
-    #       apiVersion: config.openshift.io/v1
-    #       kind: OAuth
-    #       metadata:
-    #         name: cluster
-    #         namespace: openshift-config
-    #       spec:
-    #         identityProviders:
-    #           - name: "{{ config.client.client_id }}"
-    #             mappingMethod: claim
-    #             type: OpenID
-    #             openID:
-    #               clientID: "{{ config.client.client_id }}"
-    #               clientSecret:
-    #                 name: keycloak-client-secret
-    #               issuer:
-    #                 https://keycloak-keycloak.{{ domain }}/auth/realms/{{ config.client.client_id }}
-    #               claims:
-    #                 email:
-    #                   - email
-    #                 name:
-    #                   - name
-    #                 preferredUsername:
-    #                   - preferred_username
+    - name: Patch OAuth config to include Keycloak IdP
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: config.openshift.io/v1
+          kind: OAuth
+          metadata:
+            name: cluster
+            namespace: openshift-config
+          spec:
+            identityProviders:
+              - name: "keycloak"
+                mappingMethod: claim
+                type: OpenID
+                openID:
+                  clientID: "{{ config.client.client_id }}"
+                  clientSecret:
+                    name: keycloak-client-secret
+                  issuer:
+                    https://keycloak-keycloak.{{ domain }}/auth/realms/{{ config.client.client_id }}
+                  claims:
+                    email:
+                      - email
+                    name:
+                      - name
+                    preferredUsername:
+                      - preferred_username
 
 - name: Create a Keycloak group, authentication with credentials
   community.general.keycloak_group:
