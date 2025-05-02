@@ -67,6 +67,9 @@
               --resource-group {{ cluster.providerCredentials.resource_group_name }}
           register: aro_credential
 
+        - debug:
+            var: aro_credential.stdout
+
         - name: Set ARO Credentials
           ansible.builtin.set_fact:
             cluster_credentials:
