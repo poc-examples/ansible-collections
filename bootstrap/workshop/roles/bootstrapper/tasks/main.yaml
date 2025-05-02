@@ -136,8 +136,8 @@
 - name: Connecting to OpenShift - Can Take up to 7-15 Minutes
   community.okd.openshift_auth:
     host: "{{ cluster_api_url }}"
-    username: "{{ credentials.admin.username }}"
-    password: "{{ credentials.admin.password }}"
+    username: "{{ cluster_credentials.username }}"
+    password: "{{ cluster_credentials.password }}"
     verify_ssl: false
   register: login
   retries: 45
