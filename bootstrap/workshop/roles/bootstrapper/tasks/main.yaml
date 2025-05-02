@@ -71,34 +71,15 @@
               username: "{{ (aro_credential.stdout | from_json).kubeadminUsername }}"
               password: "{{ (aro_credential.stdout | from_json).kubeadminPassword }}"
 
-
-    - name: Debug
-      debug:
-        msg: "{{ cluster_credentials }}"
-
-      
-
-# - name: Parse Login Credentials
-#   block:
-
-#     - name: Fetch User Provided Credentials
-#       when:
-#       ansible.builtin.set_fact:
-#         shared_cluster_domain: ""
-
-#   ## IF CREDENTIALS ARE PROVIDED USE THEM
-#   ## ELSE DETERMINE CLUSTER TYPE
-#     ## IF ARO FETCH THEM
-
-# - name: Set OpenShift Defaults
-#   ansible.builtin.set_fact:
-#     validate_certs: "{{ cluster.validate_certs | default(false) }}"
-#     openshift_domain: "{{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}"
-#     shared_cluster_enabled: "{{ cluster.workshop.sharedClusterRef is defined | bool }}"
-#     shared_cluster:
-#       enabled: ""
-#       domain: ""
-#       ingress_domain: ""
+- name: Set OpenShift Defaults
+  ansible.builtin.set_fact:
+    validate_certs: "{{ cluster.validate_certs | default(false) }}"
+    openshift_domain: "{{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}"
+    shared_cluster_enabled: "{{ cluster.workshop.sharedClusterRef is defined | bool }}"
+    shared_cluster:
+      enabled: ""
+      domain: ""
+      ingress_domain: ""
 
 # - name: Query Shared Cluster
 #   when: shared_cluster_enabled == true
