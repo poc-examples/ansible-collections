@@ -73,7 +73,7 @@
 
         - name: Debug
           debug:
-            var: cluster_credentials
+            msg: "{{ cluster_credentials }}"
 
       
 
