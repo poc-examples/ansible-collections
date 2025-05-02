@@ -1,3 +1,4 @@
+#
 - name: Ensure OpenShift-GitOps CRDs Exists
   kubernetes.core.k8s_info:
     host: "{{ api_url }}"
@@ -12,7 +13,7 @@
     - argocd_crd.resources | length > 0
   retries: 40
   delay: 30
-
+#
 - name: Configure ArgoCD Instance
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -187,112 +188,112 @@
           insecure: true
         kustomizeBuildOptions: '--enable-helm'
 
-- name: Configure Default Cluster
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: "default-cluster"
-        namespace: "openshift-gitops"
-        # Best for Unstructured Metadata like relationships
-        annotations:
-          shared_domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, '') }}"
-          has_shared: "{{ shared_cluster_enabled | string }}"
-        # Keep this for information about this cluster
-        labels:
-          argocd.argoproj.io/secret-type: cluster
-          vault_token: "{{ credentials.vault.token }}"
-          type: "{{ cluster.type }}"
-          cluster: default
-          cluster_name: "{{ cluster.cluster_name | default(cluster.name)}}"
-          version: "{{ cluster.version | default('not_available') }}"
-          region: "{{ cluster.providerCredentials.region | default('not_available')}}"
-          domain: "apps.{{ domain }}"
-          role: "{{ workshop.chart.settings.role }}"
-      stringData:
-        config: '{"tlsClientConfig":{"insecure":false}}'
-        name: "default"
-        nameNormalized: "default"
-        server: "https://kubernetes.default.svc"
+# - name: Configure Default Cluster
+#   community.okd.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition:
+#       apiVersion: v1
+#       kind: Secret
+#       metadata:
+#         name: "default-cluster"
+#         namespace: "openshift-gitops"
+#         # Best for Unstructured Metadata like relationships
+#         annotations:
+#           shared_domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, '') }}"
+#           has_shared: "{{ shared_cluster_enabled | string }}"
+#         # Keep this for information about this cluster
+#         labels:
+#           argocd.argoproj.io/secret-type: cluster
+#           vault_token: "{{ credentials.vault.token }}"
+#           type: "{{ cluster.type }}"
+#           cluster: default
+#           cluster_name: "{{ cluster.cluster_name | default(cluster.name)}}"
+#           version: "{{ cluster.version | default('not_available') }}"
+#           region: "{{ cluster.providerCredentials.region | default('not_available')}}"
+#           domain: "apps.{{ domain }}"
+#           role: "{{ workshop.chart.settings.role }}"
+#       stringData:
+#         config: '{"tlsClientConfig":{"insecure":false}}'
+#         name: "default"
+#         nameNormalized: "default"
+#         server: "https://kubernetes.default.svc"
 
-- name: Configure ArgoCD Plugin
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: console.openshift.io/v1
-      kind: ConsolePlugin
-      metadata:
-        name: gitops-plugin
-      spec:
-        backend:
-          service:
-            basePath: /
-            name: gitops-plugin
-            namespace: "{{ gitops.namespace }}"
-            port: 9001
-          type: Service
-        displayName: GitOps Plugin
-        i18n:
-          loadType: Preload
+# - name: Configure ArgoCD Plugin
+#   community.okd.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition:
+#       apiVersion: console.openshift.io/v1
+#       kind: ConsolePlugin
+#       metadata:
+#         name: gitops-plugin
+#       spec:
+#         backend:
+#           service:
+#             basePath: /
+#             name: gitops-plugin
+#             namespace: "{{ gitops.namespace }}"
+#             port: 9001
+#           type: Service
+#         displayName: GitOps Plugin
+#         i18n:
+#           loadType: Preload
 
-- name: Build list of clusters for Helm values
-  ansible.builtin.set_fact:
-    rendered_clusters: |
-      clusters:
-      {% for cluster in openshift.clusters %}
-        - name: {{ cluster.name }}
-          stage: {{ cluster.workshop.chart.settings.stage }}
-          domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
-          role: {{ cluster.workshop.chart.settings.role }}
-      {% endfor %}
+# - name: Build list of clusters for Helm values
+#   ansible.builtin.set_fact:
+#     rendered_clusters: |
+#       clusters:
+#       {% for cluster in openshift.clusters %}
+#         - name: {{ cluster.name }}
+#           stage: {{ cluster.workshop.chart.settings.stage }}
+#           domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
+#           role: {{ cluster.workshop.chart.settings.role }}
+#       {% endfor %}
 
-- name: Create WorkShop Application
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: argoproj.io/v1alpha1
-      kind: Application
-      metadata:
-        name: "{{ workshop.chart.name }}-workshop"
-        namespace: "{{ gitops.namespace }}"
-      spec:
-        destination:
-          namespace: "{{ gitops.namespace }}"
-          server: 'https://kubernetes.default.svc'
-        source:
-          chart: "{{ workshop.chart.name }}"
-          repoURL: "{{ workshop.chart.repo }}"
-          targetRevision: "{{ workshop.chart.version }}"
-          helm:
-            values: |
-              shared:
-                enabled: {{ shared_cluster_enabled | string }}
-              {{ rendered_clusters }}
-        project: default
-        timeout: 120
-        syncPolicy:
-          retry:
-            limit: 10
-            backoff:
-              duration: 5s
-              factor: 2
-              maxDuration: 30s
-          automated:
-            selfHeal: true
-          managedNamespaceMetadata:
-            labels:
-              argocd.argoproj.io/managed-by: "{{ gitops.namespace }}"
-          syncOptions:
-            - CreateNamespace=false
-            - Validate=false
-  when:
-    - workshop.chart.enabled is defined
-    - workshop.chart.enabled is true
+# - name: Create WorkShop Application
+#   community.okd.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition:
+#       apiVersion: argoproj.io/v1alpha1
+#       kind: Application
+#       metadata:
+#         name: "{{ workshop.chart.name }}-workshop"
+#         namespace: "{{ gitops.namespace }}"
+#       spec:
+#         destination:
+#           namespace: "{{ gitops.namespace }}"
+#           server: 'https://kubernetes.default.svc'
+#         source:
+#           chart: "{{ workshop.chart.name }}"
+#           repoURL: "{{ workshop.chart.repo }}"
+#           targetRevision: "{{ workshop.chart.version }}"
+#           helm:
+#             values: |
+#               shared:
+#                 enabled: {{ shared_cluster_enabled | string }}
+#               {{ rendered_clusters }}
+#         project: default
+#         timeout: 120
+#         syncPolicy:
+#           retry:
+#             limit: 10
+#             backoff:
+#               duration: 5s
+#               factor: 2
+#               maxDuration: 30s
+#           automated:
+#             selfHeal: true
+#           managedNamespaceMetadata:
+#             labels:
+#               argocd.argoproj.io/managed-by: "{{ gitops.namespace }}"
+#           syncOptions:
+#             - CreateNamespace=false
+#             - Validate=false
+#   when:
+#     - workshop.chart.enabled is defined
+#     - workshop.chart.enabled is true
