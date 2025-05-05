@@ -176,18 +176,18 @@
   set_fact:
     ingress_domain: "{{ ingress_info.resources[0].spec.domain | regex_replace('^apps\\.', '') }}"
 
-- name: Fetch Admin Group
-  kubernetes.core.k8s_info:
-    host: "{{ cluster_api_url }}"
-    api_key: "{{ login.openshift_auth.api_key }}"
-    validate_certs: "{{ validate_certs }}"
-    api_version: user.openshift.io/v1
-    kind: Group
-    name: "cluster-admins"
-  register: group
+# - name: Fetch Admin Group
+#   kubernetes.core.k8s_info:
+#     host: "{{ cluster_api_url }}"
+#     api_key: "{{ login.openshift_auth.api_key }}"
+#     validate_certs: "{{ validate_certs }}"
+#     api_version: user.openshift.io/v1
+#     kind: Group
+#     name: "cluster-admins"
+#   register: group
 
-- debug:
-    var: group
+# - debug:
+#     var: group
 
 # - name: Ensure Admin Groups 
 #   block:
@@ -223,47 +223,47 @@
 #             kind: ClusterRole
 #             name: cluster-admin
 
-# - name: Install OpenShift-GitOps Operator
-#   vars:
-#     api_url: "{{ cluster_api_url }}"
-#     token: "{{ login.openshift_auth.api_key }}"
-#   ansible.builtin.include_role:
-#     name: gitops-operator
-#   when:
-#     - gitops.enabled is true
+- name: Install OpenShift-GitOps Operator
+  vars:
+    api_url: "{{ cluster_api_url }}"
+    token: "{{ login.openshift_auth.api_key }}"
+  ansible.builtin.include_role:
+    name: gitops-operator
+  when:
+    - gitops.enabled is true
 
-# - name: Configure OpenShift-GitOps Instance
-#   vars:
-#     domain: "{{ ingress_domain }}"
-#     api_url: "{{ cluster_api_url }}"
-#     token: "{{ login.openshift_auth.api_key }}"
-#     workshop: "{{ cluster.workshop }}"
-#   ansible.builtin.include_role:
-#     name: gitops-instance
-#   when:
-#     - gitops.enabled is true
+- name: Configure OpenShift-GitOps Instance
+  vars:
+    domain: "{{ ingress_domain }}"
+    api_url: "{{ cluster_api_url }}"
+    token: "{{ login.openshift_auth.api_key }}"
+    workshop: "{{ cluster.workshop }}"
+  ansible.builtin.include_role:
+    name: gitops-instance
+  when:
+    - gitops.enabled is true
 
-# - name: Secrets Management
-#   vars:
-#     api_url: "{{ cluster_api_url }}"
-#     token: "{{ login.openshift_auth.api_key }}"
-#     secrets: "{{ cluster.secrets }}"
-#     rosa_token: "{{ cluster.providerCredentials.rosa_token }}"
-#     aro_credentials:
-#       CLIENT_ID: "{{ cluster.providerCredentials.client_id }}"
-#       CLIENT_SECRET: "{{ cluster.providerCredentials.client_secret }}"
-#       SUBSCRIPTION_ID: "{{ cluster.providerCredentials.subscription_id }}"
-#       TENANT_ID: "{{ cluster.providerCredentials.tenant_id }}"
-#       RESOURCE_GROUP_NAME: "{{ cluster.providerCredentials.resource_group_name }}"
-#       LOCATION: "{{ cluster.providerCredentials.location }}"
-#     aws_credentials:
-#       AWS_ACCESS_KEY_ID: "{{ cluster.providerCredentials.aws_access_key_id }}"
-#       AWS_SECRET_ACCESS_KEY: "{{ cluster.providerCredentials.aws_secret_access_key }}"
-#     keycloak_users: "{{ credentials.users }}"
-#   ansible.builtin.import_role:
-#     name: secrets-manager
+- name: Secrets Management
+  vars:
+    api_url: "{{ cluster_api_url }}"
+    token: "{{ login.openshift_auth.api_key }}"
+    secrets: "{{ cluster.secrets }}"
+    rosa_token: "{{ cluster.providerCredentials.rosa_token }}"
+    aro_credentials:
+      CLIENT_ID: "{{ cluster.providerCredentials.client_id }}"
+      CLIENT_SECRET: "{{ cluster.providerCredentials.client_secret }}"
+      SUBSCRIPTION_ID: "{{ cluster.providerCredentials.subscription_id }}"
+      TENANT_ID: "{{ cluster.providerCredentials.tenant_id }}"
+      RESOURCE_GROUP_NAME: "{{ cluster.providerCredentials.resource_group_name }}"
+      LOCATION: "{{ cluster.providerCredentials.location }}"
+    aws_credentials:
+      AWS_ACCESS_KEY_ID: "{{ cluster.providerCredentials.aws_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ cluster.providerCredentials.aws_secret_access_key }}"
+    keycloak_users: "{{ credentials.users }}"
+  ansible.builtin.import_role:
+    name: secrets-manager
 
-# - name: Links 
-#   debug:
-#     msg: |
-#       console url: https://console-openshift-console.apps.{{ ingress_domain }}
+- name: Links 
+  debug:
+    msg: |
+      console url: https://console-openshift-console.apps.{{ ingress_domain }}
