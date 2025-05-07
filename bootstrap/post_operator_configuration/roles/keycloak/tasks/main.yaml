@@ -166,9 +166,8 @@
     auth_realm: master
     auth_username: "{{ config.idp.username }}"
     auth_password: "{{ config.idp.password }}"
-    default_groups: [
-      "/developers"
-    ]
+    default_groups:
+      - "{{ group.end_state.id }}"
     realm: "{{ config.client.client_id }}"
   register: realm
 
