@@ -282,7 +282,7 @@
               {{ rendered_clusters }}
             parameters:
               - name: keycloak.settings.registrationAllowed
-                value: "{{ openshift.credentials.registrationAllowed | default(false) }}"
+                value: "{{ openshift.credentials.registrationAllowed | default(false) | string }}"
         project: default
         timeout: 120
         syncPolicy:
