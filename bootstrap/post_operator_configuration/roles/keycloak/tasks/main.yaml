@@ -167,7 +167,7 @@
     auth_username: "{{ config.idp.username }}"
     auth_password: "{{ config.idp.password }}"
     default_groups:
-      - "{{ group.end_state.name }}"
+      - "{{ group.end_state.path }}"
     realm: "{{ config.client.client_id }}"
   register: realm
 
