@@ -155,6 +155,9 @@
     realm: "{{ config.client.client_id }}"
   register: group
 
+- debug:
+    var: group
+
 - name: Set default Keycloak group, authentication with credentials
   community.general.keycloak_realm:
     auth_client_id: "admin-cli"
