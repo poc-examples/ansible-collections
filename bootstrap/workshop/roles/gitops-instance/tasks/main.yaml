@@ -279,8 +279,9 @@
                 enabled: {{ shared_cluster_enabled | string }}
               cluster: 
                 type: {{ cluster.type }}
-              settings:
-                registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | string }}
+              keycloak:
+                settings:
+                  registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | string }}
               {{ rendered_clusters }}
         project: default
         timeout: 120
