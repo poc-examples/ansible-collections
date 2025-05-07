@@ -171,8 +171,23 @@
     validate_certs: false
   register: keycloak_token
 
+- name: Set default group in Keycloak realm
+  uri:
+    url: "https://keycloak-keycloak.{{ domain }}/auth/admin/realms/{{ config.client.client_id }}/default-groups/{{ group.end_state.id }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ keycloak_token.json.access_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      realm: "{{ config.client.client_id }}"
+      groupId: "{{ group.end_state.id }}"
+  status_code: 204
+  validate_certs: false
+  register: setGroup
+
 - debug:
-    var: keycloak_token
+    var: setGroup
 
 - name: Set default Keycloak group, authentication with credentials
   community.general.keycloak_realm:
