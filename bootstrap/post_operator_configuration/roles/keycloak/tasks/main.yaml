@@ -122,6 +122,8 @@
                   issuer:
                     https://keycloak-keycloak.{{ domain }}/auth/realms/{{ config.client.client_id }}
                   claims:
+                    groups:
+                      - groups
                     email:
                       - email
                     name:
