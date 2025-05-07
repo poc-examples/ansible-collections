@@ -166,7 +166,10 @@
     default_groups:
       - developers
     realm: "{{ config.client.client_id }}"
-  register: group
+  register: realm
+
+- debug:
+    var: realm
 
 - name: Retrieve Keycloak Initial Users Secret
   kubernetes.core.k8s_info:
