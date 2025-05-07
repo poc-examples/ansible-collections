@@ -184,10 +184,10 @@
       groupId: "{{ group.end_state.id }}"
     status_code: 204
     validate_certs: false
-  register: setGroup
+  register: set_default_group_response
 
 - debug:
-    var: setGroup
+    var: set_default_group_response
 
 - name: Retrieve Keycloak Initial Users Secret
   kubernetes.core.k8s_info:
