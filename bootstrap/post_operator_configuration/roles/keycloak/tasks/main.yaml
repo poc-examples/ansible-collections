@@ -155,6 +155,19 @@
     realm: "{{ config.client.client_id }}"
   register: group
 
+- name: Set default Keycloak group, authentication with credentials
+  community.general.keycloak_realm:
+    auth_client_id: "admin-cli"
+    auth_keycloak_url: https://keycloak-keycloak.{{ domain }}/auth
+    validate_certs: false
+    auth_realm: master
+    auth_username: "{{ config.idp.username }}"
+    auth_password: "{{ config.idp.password }}"
+    default_groups:
+      - developers
+    realm: "{{ config.client.client_id }}"
+  register: group
+
 - name: Retrieve Keycloak Initial Users Secret
   kubernetes.core.k8s_info:
     api_version: v1
