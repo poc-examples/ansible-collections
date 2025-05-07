@@ -254,9 +254,6 @@
           role: {{ cluster.workshop.chart.settings.role }}
       {% endfor %}
 
-- debug:
-    msg: "allowRegistration: {{ openshift.credentials.registrationAllowed | default(false) | string }}"
-
 - name: Create WorkShop Application
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -282,10 +279,10 @@
                 enabled: {{ shared_cluster_enabled | string }}
               cluster: 
                 type: {{ cluster.type }}
-              keycloak: 
-                settings:
-                  registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | string }}
               {{ rendered_clusters }}
+            parameters:
+              - name: keycloak.settings.registrationAllowed
+                value: {{ openshift.credentials.registrationAllowed | default(false) | string }}
         project: default
         timeout: 120
         syncPolicy:
