@@ -281,7 +281,7 @@
                 type: {{ cluster.type }}
               keycloak:
                 settings:
-                  registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | string }}
+                  registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) }}
               {{ rendered_clusters }}
         project: default
         timeout: 120
