@@ -254,6 +254,9 @@
           role: {{ cluster.workshop.chart.settings.role }}
       {% endfor %}
 
+- debug:
+    msg: "allowRegistration: {{ openshift.credentials.registrationAllowed | default(false) | string }}"
+
 - name: Create WorkShop Application
   community.okd.k8s:
     host: "{{ api_url }}"
