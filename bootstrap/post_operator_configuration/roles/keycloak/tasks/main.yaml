@@ -164,7 +164,7 @@
     auth_username: "{{ config.idp.username }}"
     auth_password: "{{ config.idp.password }}"
     default_groups:
-      - /developers
+      -  "/developers"
     realm: "{{ config.client.client_id }}"
   register: realm
 
