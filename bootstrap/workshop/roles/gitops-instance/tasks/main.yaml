@@ -190,7 +190,7 @@
 
 - name: Build list of clusters for Helm values
   ansible.builtin.set_fact:
-    rendered_clusters: |
+    rendered_clusters:
       shared:
         enabled: {{ shared_cluster_enabled | string }}
       cluster: 
@@ -198,13 +198,13 @@
       keycloak:
         settings:
           registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | bool }}
-      clusters:
-      {% for cluster in openshift.clusters %}
-        - name: {{ cluster.name }}
-          stage: {{ cluster.workshop.chart.settings.stage }}
-          domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
-          role: {{ cluster.workshop.chart.settings.role }}
-      {% endfor %}
+      clusters: |
+        {% for cluster in openshift.clusters %}
+          - name: {{ cluster.name }}
+            stage: {{ cluster.workshop.chart.settings.stage }}
+            domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
+            role: {{ cluster.workshop.chart.settings.role }}
+        {% endfor %}
 
 - name: Configure Default Cluster
   community.okd.k8s:
