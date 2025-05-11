@@ -188,6 +188,24 @@
           insecure: true
         kustomizeBuildOptions: '--enable-helm'
 
+- name: Build list of clusters for Helm values
+  ansible.builtin.set_fact:
+    rendered_clusters: |
+      shared:
+        enabled: {{ shared_cluster_enabled | string }}
+      cluster: 
+        type: {{ cluster.type }}
+      keycloak:
+        settings:
+          registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | bool }}
+      clusters:
+      {% for cluster in openshift.clusters %}
+        - name: {{ cluster.name }}
+          stage: {{ cluster.workshop.chart.settings.stage }}
+          domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
+          role: {{ cluster.workshop.chart.settings.role }}
+      {% endfor %}
+
 - name: Configure Default Cluster
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -201,6 +219,7 @@
         namespace: "openshift-gitops"
         # Best for Unstructured Metadata like relationships
         annotations:
+          cluster_config: "{{ cluster_config_struct | to_json }}"
           shared_domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, '') }}"
           has_shared: "{{ shared_cluster_enabled | string }}"
         # Keep this for information about this cluster
@@ -243,17 +262,6 @@
         i18n:
           loadType: Preload
 
-- name: Build list of clusters for Helm values
-  ansible.builtin.set_fact:
-    rendered_clusters: |
-      clusters:
-      {% for cluster in openshift.clusters %}
-        - name: {{ cluster.name }}
-          stage: {{ cluster.workshop.chart.settings.stage }}
-          domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
-          role: {{ cluster.workshop.chart.settings.role }}
-      {% endfor %}
-
 - name: Create WorkShop Application
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -275,13 +283,6 @@
           targetRevision: "{{ workshop.chart.version }}"
           helm:
             values: |
-              shared:
-                enabled: {{ shared_cluster_enabled | string }}
-              cluster: 
-                type: {{ cluster.type }}
-              keycloak:
-                settings:
-                  registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | bool }}
               {{ rendered_clusters }}
         project: default
         timeout: 120
