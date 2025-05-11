@@ -188,28 +188,6 @@
           insecure: true
         kustomizeBuildOptions: '--enable-helm'
 
-- name: Generate a cluster list
-  ansible.builtin.set_fact:
-    cluster_list: |
-      {% for cluster in openshift.clusters %}
-      - name: {{ cluster.name }}
-        stage: {{ cluster.workshop.chart.settings.stage }}
-        domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
-        role: {{ cluster.workshop.chart.settings.role }}
-      {% endfor %}
-
-- name: Build list of clusters for Helm values
-  ansible.builtin.set_fact:
-    rendered_clusters:
-      shared:
-        enabled: "{{ shared_cluster_enabled | string }}"
-      cluster: 
-        type: "{{ cluster.type }}"
-      keycloak:
-        settings:
-          registrationAllowed: "{{ openshift.credentials.registrationAllowed | default(false) | bool }}"
-      clusters: "{{ cluster_list | from_yaml }}"
-
 - name: Configure Default Cluster
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -223,7 +201,6 @@
         namespace: "openshift-gitops"
         # Best for Unstructured Metadata like relationships
         annotations:
-          cluster_config: "{{ rendered_clusters | to_json }}"
           shared_domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, '') }}"
           has_shared: "{{ shared_cluster_enabled | string }}"
         # Keep this for information about this cluster
@@ -266,45 +243,63 @@
         i18n:
           loadType: Preload
 
-# - name: Create WorkShop Application
-#   community.okd.k8s:
-#     host: "{{ api_url }}"
-#     api_key: "{{ token }}"
-#     validate_certs: "{{ validate_certs }}"
-#     definition:
-#       apiVersion: argoproj.io/v1alpha1
-#       kind: Application
-#       metadata:
-#         name: "{{ workshop.chart.name }}-workshop"
-#         namespace: "{{ gitops.namespace }}"
-#       spec:
-#         destination:
-#           namespace: "{{ gitops.namespace }}"
-#           server: 'https://kubernetes.default.svc'
-#         source:
-#           chart: "{{ workshop.chart.name }}"
-#           repoURL: "{{ workshop.chart.repo }}"
-#           targetRevision: "{{ workshop.chart.version }}"
-#           helm:
-#             values: |
-#               {{ rendered_clusters }}
-#         project: default
-#         timeout: 120
-#         syncPolicy:
-#           retry:
-#             limit: 10
-#             backoff:
-#               duration: 5s
-#               factor: 2
-#               maxDuration: 30s
-#           automated:
-#             selfHeal: true
-#           managedNamespaceMetadata:
-#             labels:
-#               argocd.argoproj.io/managed-by: "{{ gitops.namespace }}"
-#           syncOptions:
-#             - CreateNamespace=false
-#             - Validate=false
-#   when:
-#     - workshop.chart.enabled is defined
-#     - workshop.chart.enabled is true
+- name: Build list of clusters for Helm values
+  ansible.builtin.set_fact:
+    rendered_clusters: |
+      shared:
+        enabled: {{ shared_cluster_enabled | string }}
+      cluster: 
+        type: {{ cluster.type }}
+      keycloak:
+        settings:
+          registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | bool }}
+      clusters:
+      {% for cluster in openshift.clusters %}
+        - name: {{ cluster.name }}
+          stage: {{ cluster.workshop.chart.settings.stage }}
+          domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
+          role: {{ cluster.workshop.chart.settings.role }}
+      {% endfor %}
+
+- name: Create WorkShop Application
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: "{{ workshop.chart.name }}-workshop"
+        namespace: "{{ gitops.namespace }}"
+      spec:
+        destination:
+          namespace: "{{ gitops.namespace }}"
+          server: 'https://kubernetes.default.svc'
+        source:
+          chart: "{{ workshop.chart.name }}"
+          repoURL: "{{ workshop.chart.repo }}"
+          targetRevision: "{{ workshop.chart.version }}"
+          helm:
+            values: |
+              {{ rendered_clusters }}
+        project: default
+        timeout: 120
+        syncPolicy:
+          retry:
+            limit: 10
+            backoff:
+              duration: 5s
+              factor: 2
+              maxDuration: 30s
+          automated:
+            selfHeal: true
+          managedNamespaceMetadata:
+            labels:
+              argocd.argoproj.io/managed-by: "{{ gitops.namespace }}"
+          syncOptions:
+            - CreateNamespace=false
+            - Validate=false
+  when:
+    - workshop.chart.enabled is defined
+    - workshop.chart.enabled is true
