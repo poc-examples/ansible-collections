@@ -219,7 +219,7 @@
         namespace: "openshift-gitops"
         # Best for Unstructured Metadata like relationships
         annotations:
-          cluster_config: "{{ cluster_config_struct | to_json }}"
+          cluster_config: "{{ rendered_clusters | to_json }}"
           shared_domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, '') }}"
           has_shared: "{{ shared_cluster_enabled | string }}"
         # Keep this for information about this cluster
