@@ -190,19 +190,15 @@
 
 - name: Generate a cluster list
   ansible.builtin.set_fact:
-    cluster_list: >-
-      {% set out = [] %}
-      {% for c in openshift.clusters %}
-      {% set _ = out.append({
-        'name': c.name,
-        'stage': c.workshop.chart.settings.stage,
-        'domain': c.get('domain', terraform_outputs[c.name + '_domain']['value']),
-        'role': c.workshop.chart.settings.role
-      }) %}
+    cluster_list: |
+      {% for cluster in openshift.clusters %}
+      - name: {{ cluster.name }}
+        stage: {{ cluster.workshop.chart.settings.stage }}
+        domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
+        role: {{ cluster.workshop.chart.settings.role }}
       {% endfor %}
-      {{ out }}
 
-- name: Build default cluster Helm values
+- name: Build list of clusters for Helm values
   ansible.builtin.set_fact:
     rendered_clusters:
       shared:
@@ -212,7 +208,7 @@
       keycloak:
         settings:
           registrationAllowed: "{{ openshift.credentials.registrationAllowed | default(false) | bool }}"
-      clusters: "{{ cluster_list }}"
+      clusters: "{{ cluster_list | from_yaml }}"
 
 - name: Configure Default Cluster
   community.okd.k8s:
