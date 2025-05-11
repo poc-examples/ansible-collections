@@ -188,7 +188,21 @@
           insecure: true
         kustomizeBuildOptions: '--enable-helm'
 
-- name: Build list of clusters for Helm values
+- name: Generate a cluster list
+  ansible.builtin.set_fact:
+    cluster_list: >-
+      {% set out = [] %}
+      {% for c in openshift.clusters %}
+      {% set _ = out.append({
+        'name': c.name,
+        'stage': c.workshop.chart.settings.stage,
+        'domain': c.get('domain', terraform_outputs[c.name + '_domain']['value']),
+        'role': c.workshop.chart.settings.role
+      }) %}
+      {% endfor %}
+      {{ out }}
+
+- name: Build default cluster Helm values
   ansible.builtin.set_fact:
     rendered_clusters:
       shared:
@@ -198,17 +212,7 @@
       keycloak:
         settings:
           registrationAllowed: "{{ openshift.credentials.registrationAllowed | default(false) | bool }}"
-      clusters: >-
-        {% set out = [] %}
-        {% for c in openshift.clusters %}
-        {% set _ = out.append({
-          'name': c.name,
-          'stage': c.workshop.chart.settings.stage,
-          'domain': c.get('domain', terraform_outputs[c.name + '_domain']['value']),
-          'role': c.workshop.chart.settings.role
-        }) %}
-        {% endfor %}
-        {{ out }}
+      clusters: "{{ cluster_list }}"
 
 - name: Configure Default Cluster
   community.okd.k8s:
