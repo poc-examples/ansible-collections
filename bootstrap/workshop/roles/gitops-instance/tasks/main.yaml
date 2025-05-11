@@ -262,45 +262,45 @@
         i18n:
           loadType: Preload
 
-- name: Create WorkShop Application
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: argoproj.io/v1alpha1
-      kind: Application
-      metadata:
-        name: "{{ workshop.chart.name }}-workshop"
-        namespace: "{{ gitops.namespace }}"
-      spec:
-        destination:
-          namespace: "{{ gitops.namespace }}"
-          server: 'https://kubernetes.default.svc'
-        source:
-          chart: "{{ workshop.chart.name }}"
-          repoURL: "{{ workshop.chart.repo }}"
-          targetRevision: "{{ workshop.chart.version }}"
-          helm:
-            values: |
-              {{ rendered_clusters }}
-        project: default
-        timeout: 120
-        syncPolicy:
-          retry:
-            limit: 10
-            backoff:
-              duration: 5s
-              factor: 2
-              maxDuration: 30s
-          automated:
-            selfHeal: true
-          managedNamespaceMetadata:
-            labels:
-              argocd.argoproj.io/managed-by: "{{ gitops.namespace }}"
-          syncOptions:
-            - CreateNamespace=false
-            - Validate=false
-  when:
-    - workshop.chart.enabled is defined
-    - workshop.chart.enabled is true
+# - name: Create WorkShop Application
+#   community.okd.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition:
+#       apiVersion: argoproj.io/v1alpha1
+#       kind: Application
+#       metadata:
+#         name: "{{ workshop.chart.name }}-workshop"
+#         namespace: "{{ gitops.namespace }}"
+#       spec:
+#         destination:
+#           namespace: "{{ gitops.namespace }}"
+#           server: 'https://kubernetes.default.svc'
+#         source:
+#           chart: "{{ workshop.chart.name }}"
+#           repoURL: "{{ workshop.chart.repo }}"
+#           targetRevision: "{{ workshop.chart.version }}"
+#           helm:
+#             values: |
+#               {{ rendered_clusters }}
+#         project: default
+#         timeout: 120
+#         syncPolicy:
+#           retry:
+#             limit: 10
+#             backoff:
+#               duration: 5s
+#               factor: 2
+#               maxDuration: 30s
+#           automated:
+#             selfHeal: true
+#           managedNamespaceMetadata:
+#             labels:
+#               argocd.argoproj.io/managed-by: "{{ gitops.namespace }}"
+#           syncOptions:
+#             - CreateNamespace=false
+#             - Validate=false
+#   when:
+#     - workshop.chart.enabled is defined
+#     - workshop.chart.enabled is true
