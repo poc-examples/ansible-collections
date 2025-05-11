@@ -192,12 +192,12 @@
   ansible.builtin.set_fact:
     rendered_clusters:
       shared:
-        enabled: {{ shared_cluster_enabled | string }}
+        enabled: "{{ shared_cluster_enabled | string }}"
       cluster: 
-        type: {{ cluster.type }}
+        type: "{{ cluster.type }}"
       keycloak:
         settings:
-          registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | bool }}
+          registrationAllowed: "{{ openshift.credentials.registrationAllowed | default(false) | bool }}"
       clusters: |
         {% for cluster in openshift.clusters %}
           - name: {{ cluster.name }}
