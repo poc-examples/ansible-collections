@@ -203,7 +203,7 @@
           shared_domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, '') }}"
           has_shared: "{{ shared_cluster_enabled | string }}"
         labels:
-          keycloak.settings.registrationAllowed: "{{ openshift.credentials.registrationAllowed | default(false) | bool }}"
+          keycloak.settings.registrationAllowed: "{{ openshift.credentials.registrationAllowed | default(false) | string }}"
           cluster.type: "{{ cluster.type }}"
           cluster.name: "{{ cluster.cluster_name | default(cluster.name)}}"
           cluster.version: "{{ cluster.version | default('not_available') }}"
