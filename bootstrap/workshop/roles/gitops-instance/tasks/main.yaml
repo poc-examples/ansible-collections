@@ -199,12 +199,17 @@
       metadata:
         name: "default-cluster"
         namespace: "openshift-gitops"
-        # Best for Unstructured Metadata like relationships
         annotations:
           shared_domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, '') }}"
           has_shared: "{{ shared_cluster_enabled | string }}"
-        # Keep this for information about this cluster
         labels:
+          keycloak.settings.registrationAllowed: "{{ openshift.credentials.registrationAllowed | default(false) | bool }}"
+          cluster.type: "{{ cluster.type }}"
+          cluster.name: "{{ cluster.cluster_name | default(cluster.name)}}"
+          cluster.version: "{{ cluster.version | default('not_available') }}"
+          cluster.role: "{{ workshop.chart.settings.role }}"
+          shared.enabled: "{{ shared_cluster_enabled | string }}"
+          vault.token: "{{ credentials.vault.token }}"
           argocd.argoproj.io/secret-type: cluster
           vault_token: "{{ credentials.vault.token }}"
           type: "{{ cluster.type }}"
