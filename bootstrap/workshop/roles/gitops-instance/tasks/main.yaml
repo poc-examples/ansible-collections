@@ -263,7 +263,7 @@
     host: "{{ api_url }}"
     api_key: "{{ token }}"
     validate_certs: "{{ validate_certs }}"
-    apiVersion: infra.poc.io/v1alpha1
+    api_version: infra.poc.io/v1alpha1
     kind: ClusterApplicationContext
     name: cluster-app-context
     status:
