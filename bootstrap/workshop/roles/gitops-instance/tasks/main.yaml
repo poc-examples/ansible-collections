@@ -188,6 +188,108 @@
           insecure: true
         kustomizeBuildOptions: '--enable-helm'
 
+- name: Configure Configuration CRD
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      metadata:
+        name: clusterapplicationcontexts.infra.poc.io
+      spec:
+        group: infra.poc.io
+        names:
+          kind: ClusterApplicationContext
+          plural: clusterapplicationcontexts
+          singular: clusterapplicationcontext
+          shortNames:
+            - cac
+        scope: Cluster
+        versions:
+          - name: v1alpha1
+            served: true
+            storage: true
+            schema:
+              openAPIV3Schema:
+                type: object
+                properties:
+                  spec:
+                    type: object
+                    description: Optional spec field
+                  status:
+                    type: object
+                    properties:
+                      decisions:
+                        type: array
+                        description: Cluster decisions for templating
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+            subresources:
+              status: {}
+
+- name: Duck Typing Configuration
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: cluster-app-context-cfg
+        namespace: openshift-gitops
+      data:
+        apiVersion: infra.poc.io/v1alpha1
+        kind: clusterapplicationcontexts
+        statusListKey: decisions
+        matchKey: cluster.name
+
+
+- name: Build list of clusters for Helm values
+  ansible.builtin.set_fact:
+    list_clusters: |
+      {% for cluster in openshift.clusters %}
+        - name: {{ cluster.name }}
+          stage: {{ cluster.workshop.chart.settings.stage }}
+          domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
+          role: {{ cluster.workshop.chart.settings.role }}
+      {% endfor %}
+
+- name: Define ClusterApplicationContext
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: infra.poc.io/v1alpha1
+      kind: ClusterApplicationContext
+      metadata:
+        name: cluster-app-context
+      spec: {}
+      status:
+        decisions:
+          - shared:
+              enabled: "{{ shared_cluster_enabled | string }}"
+              domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, 'none') }}"
+            cloud:
+              region: "{{ cluster.providerCredentials.region | default('not_available')}}"
+              location: "{{ cluster.providerCredentials.location | default('not_available')}}"
+            cluster:
+              type: "{{ cluster.type }}"
+              domain: apps.{{ domain }}
+              name: "{{ cluster.cluster_name | default(cluster.name) }}"
+              version: "{{ cluster.version | default('not_available') }}"
+              role: "{{ workshop.chart.settings.role }}"
+            vault:
+              token: "{{ credentials.vault.token }}"
+            keycloak:
+              settings:
+                registrationAllowed: "{{ openshift.credentials.registrationAllowed | default(false) | bool }}"
+            clusters: "{{ list_clusters | from_yaml }}"
+
 - name: Configure Default Cluster
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -275,21 +377,6 @@
           domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
           role: {{ cluster.workshop.chart.settings.role }}
       {% endfor %}
-
-- name: Configure Default Cluster
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: "config-settings"
-        namespace: "openshift-gitops"
-      data: 
-        settings: |
-          {{ rendered_clusters }}
 
 - name: Create WorkShop Application
   community.okd.k8s:
