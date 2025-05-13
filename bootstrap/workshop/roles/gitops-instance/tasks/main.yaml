@@ -287,7 +287,7 @@
       metadata:
         name: "config-settings"
         namespace: "openshift-gitops"
-      data: {{ rendered_clusters | from_yaml }}
+      data: "{{ rendered_clusters | from_yaml }}"
 
 - name: Create WorkShop Application
   community.okd.k8s:
