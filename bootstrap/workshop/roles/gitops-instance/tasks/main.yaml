@@ -259,7 +259,7 @@
       {% endfor %}
 
 - name: Define ClusterApplicationContext
-  community.okd.k8s:
+  community.kubernetes.k8s_status:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
     validate_certs: "{{ validate_certs }}"
