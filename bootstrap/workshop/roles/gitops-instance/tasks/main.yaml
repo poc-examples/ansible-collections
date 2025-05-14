@@ -282,7 +282,7 @@
                             type: string
                             default: vars.yaml
                       template:
-                        type: object
+                        type: string
                         x-kubernetes-preserve-unknown-fields: true
                   status:
                     type: object
