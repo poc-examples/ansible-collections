@@ -1,4 +1,6 @@
-#
+#########################################################
+# Ensure That OpenShift GitOps is Running Before Starting
+#########################################################
 - name: Ensure OpenShift-GitOps CRDs Exists
   kubernetes.core.k8s_info:
     host: "{{ api_url }}"
@@ -13,7 +15,11 @@
     - argocd_crd.resources | length > 0
   retries: 40
   delay: 30
-#
+
+#########################################################
+# Configure the ARGOCD Instance
+# Health Checks Give Better Feedback about sync success
+#########################################################
 - name: Configure ArgoCD Instance
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -188,7 +194,32 @@
           insecure: true
         kustomizeBuildOptions: '--enable-helm'
 
-- name: Configure Configuration CRD
+- name: Configure ArgoCD Plugin
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: console.openshift.io/v1
+      kind: ConsolePlugin
+      metadata:
+        name: gitops-plugin
+      spec:
+        backend:
+          service:
+            basePath: /
+            name: gitops-plugin
+            namespace: "{{ gitops.namespace }}"
+            port: 9001
+          type: Service
+        displayName: GitOps Plugin
+        i18n:
+          loadType: Preload
+
+##################################################
+## Add Jinja Templating Operator
+##################################################
+- name: Ensure JinjaTemplate CRD
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -197,16 +228,16 @@
       apiVersion: apiextensions.k8s.io/v1
       kind: CustomResourceDefinition
       metadata:
-        name: clusterapplicationcontexts.infra.poc.io
+        name: jinjatemplates.infra.poc.io
       spec:
         group: infra.poc.io
-        names:
-          kind: ClusterApplicationContext
-          plural: clusterapplicationcontexts
-          singular: clusterapplicationcontext
-          shortNames:
-            - cac
         scope: Namespaced
+        names:
+          plural: jinjatemplates
+          singular: jinjatemplate
+          kind: JinjaTemplate
+          shortNames:
+            - jt
         versions:
           - name: v1alpha1
             served: true
@@ -214,94 +245,156 @@
             schema:
               openAPIV3Schema:
                 type: object
+                required:
+                  - spec
                 properties:
                   spec:
                     type: object
-                    description: Optional spec field
+                    required:
+                      - source
+                      - template
+                    properties:
+                      source:
+                        type: object
+                        required:
+                          - configMapRef
+                        properties:
+                          configMapRef:
+                            type: string
+                          key:
+                            type: string
+                            default: vars.yaml
+                      template:
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
                   status:
                     type: object
                     properties:
-                      decisions:
+                      conditions:
                         type: array
-                        description: Cluster decisions for templating
                         items:
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
+                      rendered:
+                        type: string
             subresources:
               status: {}
 
-- name: Duck Typing Configuration
+- name: Create Jinja Templater Service Account
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
     validate_certs: "{{ validate_certs }}"
     definition:
       apiVersion: v1
-      kind: ConfigMap
+      kind: ServiceAccount
       metadata:
-        name: cluster-app-context-cfg
+        name: jinja-templater
         namespace: openshift-gitops
-      data:
-        apiVersion: infra.poc.io/v1alpha1
-        kind: clusterapplicationcontexts
-        statusListKey: decisions
-        matchKey: name
 
-
-- name: Build list of clusters for Helm values
-  ansible.builtin.set_fact:
-    list_clusters: |
-      {% for cluster in openshift.clusters %}
-        - name: {{ cluster.name }}
-          stage: {{ cluster.workshop.chart.settings.stage }}
-          domain: {{ cluster['domain'] | default(terraform_outputs[cluster.name + '_domain']['value'], true) }}
-          role: {{ cluster.workshop.chart.settings.role }}
-      {% endfor %}
-
-- name: Define ClusterApplicationContext
+- name: Jinja Templater Service Account Role 
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
     validate_certs: "{{ validate_certs }}"
     definition:
-      apiVersion: infra.poc.io/v1alpha1
-      kind: ClusterApplicationContext
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: "Role"
       metadata:
-        name: cluster-app-context
+        name: "jinja-templater"
         namespace: openshift-gitops
-      spec: {}
+      rules:
+        - apiGroups:
+            - ""
+          resources:
+            - "secrets"
+            - "configmaps"
+          verbs:
+            - "get" 
+            - "list"
+            - "watch"
+        - apiGroups:
+            - "argoproj.io"
+          resources:
+            - "applications"
+          verbs:
+            - "get"
+            - "list"
+            - "watch"
+            - "create"
+            - "update"
+            - "patch"
+        - apiGroups:
+            - "infra.poc.io"
+          resources:
+            - "jinjatemplates"
+          verbs:
+            - "get" 
+            - "list"
+            - "watch"
 
-- name: Patch Status ClusterApplicationContext
-  operator_sdk.util.k8s_status:
+- name: Jinja Templater Service Account Role Binding
+  community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
     validate_certs: "{{ validate_certs }}"
-    api_version: infra.poc.io/v1alpha1
-    kind: ClusterApplicationContext
-    name: cluster-app-context
-    namespace: openshift-gitops
-    status:
-      decisions:
-        - name: "default"
-          shared:
-            enabled: "{{ shared_cluster_enabled | string }}"
-            domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, 'none') }}"
-          cloud:
-            region: "{{ cluster.providerCredentials.region | default('not_available')}}"
-            location: "{{ cluster.providerCredentials.location | default('not_available')}}"
-          cluster:
-            name: "{{ cluster.cluster_name | default(cluster.name) }}"
-            type: "{{ cluster.type }}"
-            domain: apps.{{ domain }}
-            version: "{{ cluster.version | default('not_available') }}"
-            role: "{{ workshop.chart.settings.role }}"
-          vault:
-            token: "{{ credentials.vault.token }}"
-          keycloak:
-            settings:
-              registrationAllowed: "{{ openshift.credentials.registrationAllowed | default(false) | bool }}"
-          clusters: "{{ list_clusters | from_yaml }}"
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: jinja-templater
+        namespace: openshift-gitops
+      subjects:
+        - kind: ServiceAccount
+          name: jinja-templater
+          namespace: openshift-gitops
+      roleRef:
+        kind: Role
+        name: jinja-templater
+        apiGroup: rbac.authorization.k8s.io
 
+- name: Jinja Templater Operator Deployment
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: jinja-operator
+        namespace: openshift-gitops
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: jinja-operator
+        template:
+          metadata:
+            labels:
+              app: jinja-operator
+          spec:
+            serviceAccountName: jinja-templater
+            containers:
+              - name: jinja-operator
+                image: docker.io/cengleby86/jinja-operator:latest
+                imagePullPolicy: Always
+                env:
+                  - name: PYTHONUNBUFFERED
+                    value: "1"
+                resources:
+                  requests:
+                    cpu: 50m
+                    memory: 128Mi
+                  limits:
+                    cpu: 200m
+                    memory: 512Mi
+
+
+
+#############################################################
+## Resume 
+#############################################################
 - name: Configure Default Cluster
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -340,28 +433,6 @@
         nameNormalized: "default"
         server: "https://kubernetes.default.svc"
 
-- name: Configure ArgoCD Plugin
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: console.openshift.io/v1
-      kind: ConsolePlugin
-      metadata:
-        name: gitops-plugin
-      spec:
-        backend:
-          service:
-            basePath: /
-            name: gitops-plugin
-            namespace: "{{ gitops.namespace }}"
-            port: 9001
-          type: Service
-        displayName: GitOps Plugin
-        i18n:
-          loadType: Preload
-
 - name: Build list of clusters for Helm values
   ansible.builtin.set_fact:
     rendered_clusters: |
@@ -390,6 +461,30 @@
           role: {{ cluster.workshop.chart.settings.role }}
       {% endfor %}
 
+
+
+
+
+# - name: Create Cluster Values
+#   community.okd.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition:
+#       apiVersion: v1
+#       kind: ConfigMap
+#       metadata:
+#         name: cluster-values
+#         namespace: openshift-gitops
+#       data:
+#         vars.yaml: |
+#           {{ rendered_clusters }}
+
+
+
+
+
+
 - name: Create WorkShop Application
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -399,7 +494,7 @@
       apiVersion: argoproj.io/v1alpha1
       kind: Application
       metadata:
-        name: "rollout-{{ workshop.chart.name }}"
+        name: "{{ workshop.chart.name }}-workshop"
         namespace: "{{ gitops.namespace }}"
       spec:
         destination:
@@ -409,6 +504,9 @@
           chart: "{{ workshop.chart.name }}"
           repoURL: "{{ workshop.chart.repo }}"
           targetRevision: "{{ workshop.chart.version }}"
+          helm:
+            values: |
+              {{ rendered_clusters }}
         project: default
         timeout: 120
         syncPolicy:
