@@ -36,7 +36,7 @@
       apiVersion: rbac.authorization.k8s.io/v1
       kind: ClusterRoleBinding
       metadata:
-        name: "{{ gitops.namespace }}-cluster-admin-binding"
+        name: "{{ gitops.namespace }}-app-cluster-admin-binding"
       subjects:
         - kind: ServiceAccount
           name: "{{ gitops.namespace }}-argocd-application-controller"
@@ -55,7 +55,7 @@
       apiVersion: rbac.authorization.k8s.io/v1
       kind: ClusterRoleBinding
       metadata:
-        name: "{{ gitops.namespace }}-cluster-admin-binding"
+        name: "{{ gitops.namespace }}-appset-cluster-admin-binding"
       subjects:
         - kind: ServiceAccount
           name: "{{ gitops.namespace }}-applicationset-controller"
