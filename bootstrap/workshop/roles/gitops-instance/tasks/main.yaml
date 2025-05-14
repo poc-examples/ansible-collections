@@ -282,7 +282,7 @@
     namespace: openshift-gitops
     status:
       decisions:
-        - name: "{{ cluster.cluster_name | default(cluster.name) }}"
+        - name: "default"
           shared:
             enabled: "{{ shared_cluster_enabled | string }}"
             domain: "{{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, 'none') }}"
@@ -290,6 +290,7 @@
             region: "{{ cluster.providerCredentials.region | default('not_available')}}"
             location: "{{ cluster.providerCredentials.location | default('not_available')}}"
           cluster:
+            name: "{{ cluster.cluster_name | default(cluster.name) }}"
             type: "{{ cluster.type }}"
             domain: apps.{{ domain }}
             version: "{{ cluster.version | default('not_available') }}"
