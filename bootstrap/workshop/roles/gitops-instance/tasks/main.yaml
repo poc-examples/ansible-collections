@@ -314,6 +314,13 @@
             - "list"
             - "watch"
         - apiGroups:
+            - ""
+          resources:
+            - "events"
+          verbs:
+            - "create" 
+            - "patch"
+        - apiGroups:
             - "argoproj.io"
           resources:
             - "applications"
@@ -332,6 +339,8 @@
             - "get" 
             - "list"
             - "watch"
+            - "patch"
+            - "update"
 
 - name: Jinja Templater Service Account Role Binding
   community.okd.k8s:
