@@ -27,7 +27,7 @@
         source: redhat-operators
         sourceNamespace: openshift-marketplace
 
-- name: Ensure RBAC
+- name: Ensure Application RBAC
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -40,6 +40,25 @@
       subjects:
         - kind: ServiceAccount
           name: "{{ gitops.namespace }}-argocd-application-controller"
+          namespace: "{{ gitops.namespace }}"
+      roleRef:
+        kind: ClusterRole
+        name: cluster-admin
+        apiGroup: rbac.authorization.k8s.io
+
+- name: Ensure AppSet RBAC
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: "{{ gitops.namespace }}-cluster-admin-binding"
+      subjects:
+        - kind: ServiceAccount
+          name: "{{ gitops.namespace }}-applicationset-controller"
           namespace: "{{ gitops.namespace }}"
       roleRef:
         kind: ClusterRole
