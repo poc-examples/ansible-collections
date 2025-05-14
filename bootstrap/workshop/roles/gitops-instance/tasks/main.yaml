@@ -206,7 +206,7 @@
           singular: clusterapplicationcontext
           shortNames:
             - cac
-        scope: Cluster
+        scope: Namespaced
         versions:
           - name: v1alpha1
             served: true
@@ -268,6 +268,7 @@
       kind: ClusterApplicationContext
       metadata:
         name: cluster-app-context
+        namespace: openshift-gitops
       spec: {}
 
 - name: Patch Status ClusterApplicationContext
@@ -278,6 +279,7 @@
     api_version: infra.poc.io/v1alpha1
     kind: ClusterApplicationContext
     name: cluster-app-context
+    namespace: openshift-gitops
     status:
       decisions:
         - shared:
