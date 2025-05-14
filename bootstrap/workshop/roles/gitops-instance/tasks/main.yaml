@@ -396,7 +396,7 @@
       apiVersion: argoproj.io/v1alpha1
       kind: Application
       metadata:
-        name: "{{ workshop.chart.name }}-workshop"
+        name: "rollout-{{ workshop.chart.name }}"
         namespace: "{{ gitops.namespace }}"
       spec:
         destination:
@@ -406,9 +406,6 @@
           chart: "{{ workshop.chart.name }}"
           repoURL: "{{ workshop.chart.repo }}"
           targetRevision: "{{ workshop.chart.version }}"
-          helm:
-            values: |
-              {{ rendered_clusters }}
         project: default
         timeout: 120
         syncPolicy:
