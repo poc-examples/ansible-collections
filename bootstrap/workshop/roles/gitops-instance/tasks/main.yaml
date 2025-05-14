@@ -462,7 +462,7 @@
       data:
         vars.yaml: |
           config:
-          {{ rendered_clusters | nindent 2 }}
+          {{ rendered_clusters | indent( width=2, first=False) }}
 
 ######################################################################
 ## Call the Orchestrator which is templates from the Cluster Values CM
