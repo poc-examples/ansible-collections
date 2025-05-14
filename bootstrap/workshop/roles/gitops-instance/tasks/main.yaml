@@ -352,6 +352,7 @@
             - "infra.poc.io"
           resources:
             - "jinjatemplates"
+            - "jinjatemplates/status"
           verbs:
             - "get" 
             - "list"
@@ -460,7 +461,8 @@
         namespace: openshift-gitops
       data:
         vars.yaml: |
-          {{ rendered_clusters }}
+          config:
+            {{ rendered_clusters }}
 
 ######################################################################
 ## Call the Orchestrator which is templates from the Cluster Values CM
