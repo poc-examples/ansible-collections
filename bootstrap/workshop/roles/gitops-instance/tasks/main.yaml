@@ -348,11 +348,13 @@
             - "create"
             - "update"
             - "patch"
+            - "delete"
         - apiGroups:
             - "infra.poc.io"
           resources:
             - "jinjatemplates"
             - "jinjatemplates/status"
+            - "jinjatemplates/finalizers"
           verbs:
             - "get" 
             - "list"
