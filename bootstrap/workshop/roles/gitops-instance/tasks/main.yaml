@@ -409,8 +409,8 @@
                 image: docker.io/cengleby86/jinja-operator:latest
                 imagePullPolicy: Always
                 env:
-                  - name: PYTHONUNBUFFERED
-                    value: "1"
+                  - name: WATCH_NAMESPACE
+                    value: "openshift-gitops"
                 resources:
                   requests:
                     cpu: 50m
