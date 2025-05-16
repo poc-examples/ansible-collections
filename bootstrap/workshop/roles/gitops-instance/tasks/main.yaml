@@ -498,6 +498,8 @@
                 enabled: true
               gitlab:
                 enabled: true
+              keycloak:
+                enabled: true
         project: default
         timeout: 120
         syncPolicy:
