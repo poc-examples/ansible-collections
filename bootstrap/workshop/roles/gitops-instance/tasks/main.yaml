@@ -500,6 +500,8 @@
                 enabled: true
               keycloak:
                 enabled: true
+              devhub:
+                enabled: true
         project: default
         timeout: 120
         syncPolicy:
