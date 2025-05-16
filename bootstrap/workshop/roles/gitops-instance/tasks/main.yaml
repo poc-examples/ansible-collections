@@ -492,11 +492,11 @@
             values: |
               external_secrets:
                 enabled: true
-                chartVersion: 0.1.30
                 k8sConnector:
                   enabled: true
               vault:
-                chartVersion: 0.27.0
+                enabled: true
+              gitlab:
                 enabled: true
         project: default
         timeout: 120
