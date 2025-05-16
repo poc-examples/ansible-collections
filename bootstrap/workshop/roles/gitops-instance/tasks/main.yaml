@@ -437,11 +437,12 @@
         name: {{ cluster.cluster_name | default(cluster.name) }}
         version: {{ cluster.version | default('not_available') }}
         role: {{ workshop.chart.settings.role }}
-      vault:
-        token: {{ credentials.vault.token }}
-      keycloak:
-        settings:
-          registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | bool }}
+      settings:
+        vault:
+          token: {{ credentials.vault.token }}
+        keycloak:
+          settings:
+            registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | bool }}
       clusters:
       {% for cluster in openshift.clusters %}
         - name: {{ cluster.name }}
