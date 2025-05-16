@@ -441,8 +441,7 @@
         vault:
           token: {{ credentials.vault.token }}
         keycloak:
-          settings:
-            registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | bool }}
+          registrationAllowed: {{ openshift.credentials.registrationAllowed | default(false) | bool }}
       clusters:
       {% for cluster in openshift.clusters %}
         - name: {{ cluster.name }}
