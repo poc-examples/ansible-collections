@@ -8,18 +8,29 @@
         aws_access_key_id: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
         aws_secret_access_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
 
-- name: Get cluster infrastructure info
+- name: Get Cluster Infrastructure Information
   kubernetes.core.k8s_info:
     api_version: config.openshift.io/v1
     kind: Infrastructure
     name: cluster
   register: infra_details
 
-- debug:
-    var: infra_details
+- name: Azure MachineSet Creation
+  when:
+    - infra_details[0].spec.cloudConfig.platformSpec.type == "Azure"
+  block:
 
+    - name: Fetch Azure Worker MachineSet Information
+      kubernetes.core.k8s_info:
+        api_version: machine.openshift.io/v1beta1
+        kind: MachineSet
+        namespace: openshift-machine-api
+        label_selectors:
+          - machine.openshift.io/cluster-api-machine-role=worker
+      register: worker_machinesets
 
-
+    - debug:
+        var: worker_machinesets
 
 
 
