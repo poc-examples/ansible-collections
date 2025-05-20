@@ -62,11 +62,11 @@
                 labels:
                   machine.openshift.io/cluster-api-machineset: "{{ machineset_name }}"
               spec:
+                metadata:
+                  labels:
+                    platform.poc-examples.com/workload-role: "{{ machineset.name }}"
                 providerSpec:
                   value:
-                    metadata:
-                      labels:
-                        platform.poc-examples.com/workload-role: "{{ machineset.name }}"
                     acceleratedNetworking: true
                     kind: "AzureMachineProviderSpec"
                     location: "{{ provider_spec.location }}"
