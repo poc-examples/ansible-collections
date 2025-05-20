@@ -233,191 +233,191 @@
         i18n:
           loadType: Preload
 
-##################################################
-## Add Jinja Templating Operator
-##################################################
-- name: Ensure JinjaTemplate CRD
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: apiextensions.k8s.io/v1
-      kind: CustomResourceDefinition
-      metadata:
-        name: jinjatemplates.infra.poc.io
-      spec:
-        group: infra.poc.io
-        scope: Namespaced
-        names:
-          plural: jinjatemplates
-          singular: jinjatemplate
-          kind: JinjaTemplate
-          shortNames:
-            - jt
-        versions:
-          - name: v1alpha1
-            served: true
-            storage: true
-            schema:
-              openAPIV3Schema:
-                type: object
-                required:
-                  - spec
-                properties:
-                  spec:
-                    type: object
-                    required:
-                      - source
-                      - template
-                    properties:
-                      source:
-                        type: object
-                        required:
-                          - configMapRef
-                        properties:
-                          configMapRef:
-                            type: string
-                          key:
-                            type: string
-                            default: vars.yaml
-                      template:
-                        type: string
-                        x-kubernetes-preserve-unknown-fields: true
-                  status:
-                    type: object
-                    properties:
-                      conditions:
-                        type: array
-                        items:
-                          type: object
-                          x-kubernetes-preserve-unknown-fields: true
-                      rendered:
-                        type: string
-            subresources:
-              status: {}
+# ##################################################
+# ## Add Jinja Templating Operator
+# ##################################################
+# - name: Ensure JinjaTemplate CRD
+#   community.okd.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition:
+#       apiVersion: apiextensions.k8s.io/v1
+#       kind: CustomResourceDefinition
+#       metadata:
+#         name: jinjatemplates.infra.poc.io
+#       spec:
+#         group: infra.poc.io
+#         scope: Namespaced
+#         names:
+#           plural: jinjatemplates
+#           singular: jinjatemplate
+#           kind: JinjaTemplate
+#           shortNames:
+#             - jt
+#         versions:
+#           - name: v1alpha1
+#             served: true
+#             storage: true
+#             schema:
+#               openAPIV3Schema:
+#                 type: object
+#                 required:
+#                   - spec
+#                 properties:
+#                   spec:
+#                     type: object
+#                     required:
+#                       - source
+#                       - template
+#                     properties:
+#                       source:
+#                         type: object
+#                         required:
+#                           - configMapRef
+#                         properties:
+#                           configMapRef:
+#                             type: string
+#                           key:
+#                             type: string
+#                             default: vars.yaml
+#                       template:
+#                         type: string
+#                         x-kubernetes-preserve-unknown-fields: true
+#                   status:
+#                     type: object
+#                     properties:
+#                       conditions:
+#                         type: array
+#                         items:
+#                           type: object
+#                           x-kubernetes-preserve-unknown-fields: true
+#                       rendered:
+#                         type: string
+#             subresources:
+#               status: {}
 
-- name: Create Jinja Templater Service Account
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: v1
-      kind: ServiceAccount
-      metadata:
-        name: jinja-templater
-        namespace: openshift-gitops
+# - name: Create Jinja Templater Service Account
+#   community.okd.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition:
+#       apiVersion: v1
+#       kind: ServiceAccount
+#       metadata:
+#         name: jinja-templater
+#         namespace: openshift-gitops
 
-- name: Jinja Templater Service Account Role 
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: rbac.authorization.k8s.io/v1
-      kind: "Role"
-      metadata:
-        name: "jinja-templater"
-        namespace: openshift-gitops
-      rules:
-        - apiGroups:
-            - ""
-          resources:
-            - "secrets"
-            - "configmaps"
-          verbs:
-            - "get" 
-            - "list"
-            - "watch"
-        - apiGroups:
-            - ""
-          resources:
-            - "events"
-          verbs:
-            - "create" 
-            - "patch"
-        - apiGroups:
-            - "argoproj.io"
-          resources:
-            - "applications"
-          verbs:
-            - "get"
-            - "list"
-            - "watch"
-            - "create"
-            - "update"
-            - "patch"
-            - "delete"
-        - apiGroups:
-            - "infra.poc.io"
-          resources:
-            - "jinjatemplates"
-            - "jinjatemplates/status"
-            - "jinjatemplates/finalizers"
-          verbs:
-            - "get" 
-            - "list"
-            - "watch"
-            - "patch"
-            - "update"
+# - name: Jinja Templater Service Account Role 
+#   community.okd.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition:
+#       apiVersion: rbac.authorization.k8s.io/v1
+#       kind: "Role"
+#       metadata:
+#         name: "jinja-templater"
+#         namespace: openshift-gitops
+#       rules:
+#         - apiGroups:
+#             - ""
+#           resources:
+#             - "secrets"
+#             - "configmaps"
+#           verbs:
+#             - "get" 
+#             - "list"
+#             - "watch"
+#         - apiGroups:
+#             - ""
+#           resources:
+#             - "events"
+#           verbs:
+#             - "create" 
+#             - "patch"
+#         - apiGroups:
+#             - "argoproj.io"
+#           resources:
+#             - "applications"
+#           verbs:
+#             - "get"
+#             - "list"
+#             - "watch"
+#             - "create"
+#             - "update"
+#             - "patch"
+#             - "delete"
+#         - apiGroups:
+#             - "infra.poc.io"
+#           resources:
+#             - "jinjatemplates"
+#             - "jinjatemplates/status"
+#             - "jinjatemplates/finalizers"
+#           verbs:
+#             - "get" 
+#             - "list"
+#             - "watch"
+#             - "patch"
+#             - "update"
 
-- name: Jinja Templater Service Account Role Binding
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: rbac.authorization.k8s.io/v1
-      kind: RoleBinding
-      metadata:
-        name: jinja-templater
-        namespace: openshift-gitops
-      subjects:
-        - kind: ServiceAccount
-          name: jinja-templater
-          namespace: openshift-gitops
-      roleRef:
-        kind: Role
-        name: jinja-templater
-        apiGroup: rbac.authorization.k8s.io
+# - name: Jinja Templater Service Account Role Binding
+#   community.okd.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition:
+#       apiVersion: rbac.authorization.k8s.io/v1
+#       kind: RoleBinding
+#       metadata:
+#         name: jinja-templater
+#         namespace: openshift-gitops
+#       subjects:
+#         - kind: ServiceAccount
+#           name: jinja-templater
+#           namespace: openshift-gitops
+#       roleRef:
+#         kind: Role
+#         name: jinja-templater
+#         apiGroup: rbac.authorization.k8s.io
 
-- name: Jinja Templater Operator Deployment
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: jinja-operator
-        namespace: openshift-gitops
-      spec:
-        replicas: 1
-        selector:
-          matchLabels:
-            app: jinja-operator
-        template:
-          metadata:
-            labels:
-              app: jinja-operator
-          spec:
-            serviceAccountName: jinja-templater
-            containers:
-              - name: jinja-operator
-                image: docker.io/cengleby86/jinja-operator:latest
-                imagePullPolicy: Always
-                env:
-                  - name: WATCH_NAMESPACE
-                    value: "openshift-gitops"
-                resources:
-                  requests:
-                    cpu: 50m
-                    memory: 128Mi
-                  limits:
-                    cpu: 200m
-                    memory: 512Mi
+# - name: Jinja Templater Operator Deployment
+#   community.okd.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition:
+#       apiVersion: apps/v1
+#       kind: Deployment
+#       metadata:
+#         name: jinja-operator
+#         namespace: openshift-gitops
+#       spec:
+#         replicas: 1
+#         selector:
+#           matchLabels:
+#             app: jinja-operator
+#         template:
+#           metadata:
+#             labels:
+#               app: jinja-operator
+#           spec:
+#             serviceAccountName: jinja-templater
+#             containers:
+#               - name: jinja-operator
+#                 image: docker.io/cengleby86/jinja-operator:latest
+#                 imagePullPolicy: Always
+#                 env:
+#                   - name: WATCH_NAMESPACE
+#                     value: "openshift-gitops"
+#                 resources:
+#                   requests:
+#                     cpu: 50m
+#                     memory: 128Mi
+#                   limits:
+#                     cpu: 200m
+#                     memory: 512Mi
 
 #############################################################
 ## Create The Cluster
@@ -452,21 +452,21 @@
         {% endif %}
       {% endfor %}
 
-- name: Create Cluster Values Configuration for Rollout Controller
-  community.okd.k8s:
-    host: "{{ api_url }}"
-    api_key: "{{ token }}"
-    validate_certs: "{{ validate_certs }}"
-    definition:
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: cluster-values
-        namespace: openshift-gitops
-      data:
-        vars.yaml: |
-          config:
-          {{ rendered_clusters | indent( width=2, first=True) }}
+# - name: Create Cluster Values Configuration for Rollout Controller
+#   community.okd.k8s:
+#     host: "{{ api_url }}"
+#     api_key: "{{ token }}"
+#     validate_certs: "{{ validate_certs }}"
+#     definition:
+#       apiVersion: v1
+#       kind: ConfigMap
+#       metadata:
+#         name: cluster-values
+#         namespace: openshift-gitops
+#       data:
+#         vars.yaml: |
+#           config:
+#           {{ rendered_clusters | indent( width=2, first=True) }}
 
 ######################################################################
 ## Call the Orchestrator which is templates from the Cluster Values CM
@@ -504,6 +504,7 @@
                 enabled: true
               devhub:
                 enabled: true
+              {{ rendered_clusters }}
         project: default
         timeout: 120
         syncPolicy:
