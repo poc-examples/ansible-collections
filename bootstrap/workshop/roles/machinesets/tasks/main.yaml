@@ -40,6 +40,7 @@
     - name: Set MachineSet Name
       set_fact:
         machineset_name: "{{ machineset_info.infrastructureName }}-{{ machineset.name }}-workers-{{ provider_spec.location }}"
+        machine_count: "{{ machineset.count | int }}"
 
     - debug:
         var: provider_spec
@@ -53,7 +54,7 @@
             name: "{{ machineset_name }}"
             namespace: openshift-machine-api
           spec:
-            replicas: "{{ machineset.count | int + 0}}"
+            replicas: "{{ machine_count }}"
             selector:
               matchLabels:
                 machine.openshift.io/cluster-api-machineset: "{{ machineset_name }}"
