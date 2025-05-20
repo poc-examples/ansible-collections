@@ -20,7 +20,7 @@
 
 - name: Azure MachineSet Creation
   when:
-    - infra_details.resources[0].spec.cloudConfig["platformSpec"].type == "Azure"
+    - infra_details.resources[0].status.platform == "Azure"
   block:
 
     - name: Fetch Azure Worker MachineSet Information
