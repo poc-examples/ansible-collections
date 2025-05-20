@@ -492,6 +492,9 @@
           targetRevision: "{{ workshop.chart.version }}"
           helm:
             values: |
+              devspaces:
+                enabled: true
+                enableCapacity: true
               external_secrets:
                 enabled: true
                 k8sConnector:
