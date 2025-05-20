@@ -32,12 +32,12 @@
           - machine.openshift.io/cluster-api-machine-role=worker
       register: worker_machinesets
 
+    - name: SET FACTS
+      set_fact:
+        provider_spec: "{{ worker_machinesets[0].spec.template.spec.providerSpec.value }}"
+
     - debug:
-        var: worker_machinesets
-
-
-
-
+        var: provider_spec
 
 # - name: Create AWS Machineset
 #   block: 
