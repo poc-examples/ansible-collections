@@ -40,21 +40,20 @@
     - name: Set MachineSet Name
       set_fact:
         machineset_name: "{{ machineset_info.infrastructureName }}-{{ machineset.name }}-workers-{{ provider_spec.location }}"
-        machine_count: "{{ machineset.count | int }}"
 
     - debug:
         var: provider_spec
 
     - name: Generate Azure MachineSet
       kubernetes.core.k8s:
-        definition:
+        resource_definition: |
           apiVersion: machine.openshift.io/v1beta1
           kind: MachineSet
           metadata:
             name: "{{ machineset_name }}"
             namespace: openshift-machine-api
           spec:
-            replicas: "{{ machine_count }}"
+            replicas: {{ machineset.count | int }}
             selector:
               matchLabels:
                 machine.openshift.io/cluster-api-machineset: "{{ machineset_name }}"
