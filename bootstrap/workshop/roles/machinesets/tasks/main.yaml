@@ -53,7 +53,7 @@
             name: "{{ machineset_name }}"
             namespace: openshift-machine-api
           spec:
-            replicas: "{{ machineset.count | int }}"
+            replicas: {{ machineset.count | int }}
             selector:
               matchLabels:
                 machine.openshift.io/cluster-api-machineset: "{{ machineset_name }}"
