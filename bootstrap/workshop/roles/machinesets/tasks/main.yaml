@@ -15,9 +15,12 @@
     name: cluster
   register: infra_details
 
+- debug:
+    var: infra_details
+
 - name: Azure MachineSet Creation
   when:
-    - infra_details[0].spec.cloudConfig.platformSpec.type == "Azure"
+    - infra_details.resources[0].spec.cloudConfig.platformSpec.type == "Azure"
   block:
 
     - name: Fetch Azure Worker MachineSet Information
