@@ -15,12 +15,13 @@
     name: cluster
   register: infra_details
 
-- debug:
-    var: infra_details
+- name: Generate Parameters 
+  set_fact: 
+    machineset_info: "{{ infra_details.resources[0].status }}"
 
 - name: Azure MachineSet Creation
   when:
-    - infra_details.resources[0].status.platform == "Azure"
+    - machineset_info.platform == "Azure"
   block:
 
     - name: Fetch Azure Worker MachineSet Information
@@ -35,61 +36,52 @@
     - name: SET FACTS
       set_fact:
         provider_spec: "{{ worker_machinesets.resources[0].spec.template.spec.providerSpec.value }}"
+        machineset_name: "{{ machineset_info.infrastructureName }}-{{ machineset.name }}-workers-{{ provider_spec.location }}"
 
     - debug:
         var: provider_spec
 
-    # - name: ACS - If Azure Enable MachineSet
-    #   community.okd.k8s:
-    #     host: "{{ `{{ openshift.api_url }}` }}"
-    #     api_key: "{{ `{{ openshift.token }}` }}"
-    #     validate_certs: "{{ `{{ openshift.validate_certs }}` }}"
-    #     state: "{{ `{{ state }}` }}"
-    #     definition:
-    #       apiVersion: machine.openshift.io/v1beta1
-    #       kind: MachineSet
-    #       metadata:
-    #         name: "{{ `{{ infra_details.json.status.infrastructureName }}` }}-acs-workers-{{ `{{ existing_machinesets[0].spec.template.spec.providerSpec.value.location }}` }}1"
-    #         namespace: openshift-machine-api
-    #       spec:
-    #         replicas: 1
-    #         selector:
-    #           matchLabels:
-    #             machine.openshift.io/cluster-api-machineset: "{{ `{{ infra_details.json.status.infrastructureName }}` }}-acs-workers-{{ `{{ existing_machinesets[0].spec.template.spec.providerSpec.value.location }}` }}1"
-    #             supports: acs
-    #         template:
-    #           metadata:
-    #             labels:
-    #               machine.openshift.io/cluster-api-machineset: "{{ `{{ infra_details.json.status.infrastructureName }}` }}-acs-workers-{{ `{{ existing_machinesets[0].spec.template.spec.providerSpec.value.location }}` }}1"
-    #               supports: acs
-    #           spec:
-    #             providerSpec:
-    #               value:
-
-    #                 acceleratedNetworking: true
-
-    #                 # Other Machine Set Configurations
-    #                 kind: "AzureMachineProviderSpec"
-    #                 location: "{{ `{{ existing_machinesets[0].spec.template.spec.providerSpec.value.location }}` }}"
-    #                 osDisk:
-    #                   diskSettings: {}
-    #                   diskSizeGB: 128
-    #                   managedDisk:
-    #                     # Locally Redundant Premium SSDs
-    #                     storageAccountType: Premium_LRS
-    #                   osType: Linux
-                    
-    #                 # GPU Enabled Machine Type
-    #                 networkResourceGroup: "{{ `{{ existing_machinesets[0].spec.template.spec.providerSpec.value.networkResourceGroup }}` }}"
-    #                 vmSize: "{{ `{{ lookup('env', 'MANAGED_MACHINE_TYPE') }}` }}"
-    #                 image:
-    #                   offer: "{{ `{{ provider_spec.image.offer }}` }}"
-    #                   publisher: "{{ `{{ provider_spec.image.publisher }}` }}"
-    #                   sku: "{{ `{{ provider_spec.image.sku }}` }}"
-    #                   version: "{{ `{{ provider_spec.image.version }}` }}"
-    #                 subnet: "{{ `{{ existing_machinesets[0].spec.template.spec.providerSpec.value.subnet }}` }}"
-    #                 vnet: "{{ `{{ existing_machinesets[0].spec.template.spec.providerSpec.value.vnet }}` }}"
-    #                 zone: "{{ `{{ existing_machinesets[0].spec.template.spec.providerSpec.value.zone }}` }}"
+    - name: Generate Azure MachineSet
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: machine.openshift.io/v1beta1
+          kind: MachineSet
+          metadata:
+            name: "{{ machineset_name }}"
+            namespace: openshift-machine-api
+          spec:
+            replicas: "{{ machineset.count | int }}"
+            selector:
+              matchLabels:
+                machine.openshift.io/cluster-api-machineset: "{{ machineset_name }}"
+                platform.poc-examples.com/workload-role: "{{ machineset.name }}"
+            template:
+              metadata:
+                labels:
+                  machine.openshift.io/cluster-api-machineset: "{{ machineset_name }}"
+                  platform.poc-examples.com/workload-role: "{{ machineset.name }}"
+              spec:
+                providerSpec:
+                  value:
+                    acceleratedNetworking: true
+                    kind: "AzureMachineProviderSpec"
+                    location: "{{ provider_spec.location }}"
+                    osDisk:
+                      diskSettings: {}
+                      diskSizeGB: 128
+                      managedDisk:
+                        storageAccountType: Premium_LRS
+                      osType: Linux
+                    networkResourceGroup: "{{ provider_spec.networkResourceGroup }}"
+                    vmSize: "{{ machineset.type }}"
+                    image:
+                      offer: "{{ provider_spec.image.offer }}"
+                      publisher: "{{ provider_spec.image.publisher }}"
+                      sku: "{{ provider_spec.image.sku }}"
+                      version: "{{ provider_spec.image.version }}"
+                    subnet: "{{ provider_spec.subnet }}"
+                    vnet: "{{ provider_spec.vnet }}"
+                    zone: "{{ provider_spec.value.zone }}"
 
 # - name: Create AWS Machineset
 #   block: 
