@@ -33,9 +33,12 @@
           - machine.openshift.io/cluster-api-machine-role=worker
       register: worker_machinesets
 
-    - name: SET FACTS
+    - name: Set Provider Spec
       set_fact:
         provider_spec: "{{ worker_machinesets.resources[0].spec.template.spec.providerSpec.value }}"
+
+    - name: Set MachineSet Name
+      set_fact:
         machineset_name: "{{ machineset_info.infrastructureName }}-{{ machineset.name }}-workers-{{ provider_spec.location }}"
 
     - debug:
