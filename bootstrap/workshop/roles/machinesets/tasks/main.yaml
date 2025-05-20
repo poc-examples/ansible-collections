@@ -84,7 +84,7 @@
                       version: "{{ provider_spec.image.version }}"
                     subnet: "{{ provider_spec.subnet }}"
                     vnet: "{{ provider_spec.vnet }}"
-                    zone: "{{ provider_spec.value.zone }}"
+                    zone: "{{ provider_spec.zone }}"
 
 # - name: Create AWS Machineset
 #   block: 
