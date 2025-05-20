@@ -4,8 +4,6 @@
   set_fact:
     config:
       cluster:
-        cluster_name: "{{ cluster_name }}"
-        region: "{{ region }}"
         rosa_token: "{{ lookup('env', 'ROSA_TOKEN') }}"
         aws_access_key_id: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
         aws_secret_access_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
