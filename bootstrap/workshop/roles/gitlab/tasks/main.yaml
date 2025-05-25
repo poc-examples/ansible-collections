@@ -70,60 +70,10 @@
   set_fact:
     gitlab_token: "{{ gitlab_access_token.json.access_token }}"
 
-# - name: GIT LAB ACCESS TOKEN
-#   debug:
-#     msg: "{{ gitlab_token }}"
-
-# - name: GitLab - Enabled Import Via URL
-#   uri:
-#     url: "https://gitlab.{{ domain }}/api/v4/application/settings" 
-#     method: PUT
-#     validate_certs: no
-#     status_code:
-#         - 200
-#         - 201
-#         - 409
-#         - 400
-#     body_format: json
-#     headers:
-#         Content-Type: application/json
-#         Authorization: Bearer {{ gitlab_token }}
-#     body: >
-#         {
-#         "import_sources": ["git"],
-#         "auto_devops_enabled": false
-#         }
-#   register: result
-#   until: 
-#     - result.status != 403
-#     - result.status != 404
-#   retries: 5
-#   delay: 10
-
-# - name: GitLab - Fetch Groups from GitLab
-#   uri:
-#     url: "https://gitlab.{{ domain }}/api/v4/groups?search=self-provisioned"
-#     method: GET
-#     validate_certs: no
-#     status_code:
-#         - 200
-#         - 201
-#         - 409
-#         - 400
-#     headers:
-#         Content-Type: application/json
-#         Authorization: Bearer {{ gitlab_token }}
-#   register: result
-#   until: 
-#     - result.status != 403
-#     - result.status != 404
-#   retries: 5
-#   delay: 10
-
 - name: "Create GitLab Group"
   community.general.gitlab_group:
     api_url: https://gitlab.{{ domain }}
-    validate_certs: true
+    validate_certs: false
     api_username: root
     api_password: "{{ decoded_secret }}"
     name: self-provisioned
@@ -144,6 +94,34 @@
 #     - result.json is defined
 #     - result.json | length > 0
 #     - result.json[0].id is defined
+
+- name: "Creating a group access token"
+  community.general.gitlab_group_access_token:
+    api_url: https://gitlab.{{ domain }}
+    validate_certs: false
+    api_username: root
+    api_password: "{{ decoded_secret }}"
+    group: "self-provisioned"
+    name: "self-provisioned"
+    expires_at:  "{{ '%Y-%m-%d' | strftime((ansible_date_time.epoch | int) + 60*60*24*120) }}"
+    access_level: owner
+    recreate: never
+    scopes:
+      - api
+      - read_api
+      - create_runner
+      - k8s_proxy
+      - read_repository
+      - write_repository
+      - read_registry
+      - write_registry
+      - ai_features
+    state: present
+  register: group_access_token
+
+- name: Access Token Response
+  debug:
+    msg: "{{ group_access_token }}"
 
 # - name: GitLab - Create PAT Keyed Access Group
 #   uri:
