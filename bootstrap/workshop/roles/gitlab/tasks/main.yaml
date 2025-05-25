@@ -5,20 +5,6 @@
       debug:
         msg: "Starting verification of the GitLab Webserver deployment in the gitlab-system namespace."
 
-    # - name: Check GitLab Webserver Deployment Status
-    #   community.kubernetes.k8s_info:
-    #     host: "{{ api_url }}"
-    #     api_key: "{{ token }}"
-    #     validate_certs: "{{ validate_certs }}"
-    #     kind: Deployment
-    #     name: "gitlab-webservice-default"
-    #     namespace: "gitlab-system"
-    #   register: gitlab_webserver_status
-
-    # - name: Debug
-    #   debug:
-    #     msg: "{{ gitlab_webserver_status }}"
-
     - name: Check GitLab Webserver Deployment Status
       community.kubernetes.k8s_info:
         host: "{{ api_url }}"
@@ -81,19 +67,11 @@
     visibility: "internal"
     auto_devops_enabled: false
     state: present
-  register: result
+  register: self_provisioned_group
 
 - name: GIT LAB Groups
   debug:
-    msg: "{{ result }}"
-
-# - name: GitLab - Set Group ID
-#   set_fact:
-#     groupID: "{{ result.json[0].id }}"
-#   when: 
-#     - result.json is defined
-#     - result.json | length > 0
-#     - result.json[0].id is defined
+    msg: "{{ self_provisioned_group }}"
 
 - name: "Creating a group access token"
   community.general.gitlab_group_access_token:
@@ -123,56 +101,26 @@
   debug:
     msg: "{{ group_access_token }}"
 
-# - name: GitLab - Create PAT Keyed Access Group
-#   uri:
-#     url: "https://gitlab.{{ domain }}/api/v4/groups"
-#     method: POST
-#     validate_certs: no
-#     body_format: json
-#     status_code:
-#         - 200
-#         - 201
-#         - 409
-#         - 400
-#     headers:
-#         Content-Type: application/json
-#         Authorization: Bearer {{ gitlab_token }}
-#     body: >
-#         {
-#         "name": "self-provisioned",
-#         "path": "self-provisioned"
-#         }
-#   register: result
-#   until: result.status != 403
-#   retries: 10
-#   delay: 20
-#   when: 
-#     - groupID is not defined
+- name: GitLab - Fetch Access Token from GitLab for Group
+  uri:
+    url: "https://gitlab.{{ domain }}/api/v4/groups/{{ self_provisioned_group.group.id }}/access_tokens"
+    method: GET
+    validate_certs: no
+    status_code:
+        - 200
+        - 201
+        - 409
+        - 400
+    headers:
+        Content-Type: application/json
+        Authorization: Bearer {{ gitlab_token }}
+  register: tokens
+  until: tokens.status != 403
+  retries: 5
+  delay: 10
 
-# - name: GitLab - Set Group ID Variable
-#   set_fact:
-#     groupID: "{{ result.json.id }}"
-#   when: 
-#     - result.json is defined
-#     - result.json.id is defined
-
-# - name: GitLab - Fetch Access Token from GitLab for Group
-#   uri:
-#     url: "https://gitlab.{{ domain }}/api/v4/groups/{{ groupID }}/access_tokens"
-#     method: GET
-#     validate_certs: no
-#     status_code:
-#         - 200
-#         - 201
-#         - 409
-#         - 400
-#     headers:
-#         Content-Type: application/json
-#         Authorization: Bearer {{ gitlab_token }}
-#   register: tokens
-#   until: tokens.status != 403
-#   retries: 5
-#   delay: 10
+- debug:
+    var: tokens
 
 # - name: GitLab - Set Access Token Variable
 #   set_fact:
