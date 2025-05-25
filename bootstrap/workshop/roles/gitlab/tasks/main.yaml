@@ -101,62 +101,45 @@
   debug:
     msg: "{{ group_access_token }}"
 
+- name: GitLab - Create Backstage Group Token Access Credentials
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: gitlab-group-access-pat
+        namespace: "gitlab-system"
+      data:
+        GITLAB_TOKEN: "{{ group_access_token.access_token.token | b64encode }}"
+  when: 
+    - group_access_token.access_token.token is defined
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# - name: Import GitLab - Create Backstage Group Token Access Credentials
-#   community.okd.k8s:
-#     host: "{{ api_url }}"
-#     api_key: "{{ token }}"
-#     validate_certs: "{{ validate_certs }}"
-#     definition:
-#       apiVersion: v1
-#       kind: Secret
-#       metadata:
-#         name: gitlab-group-access-pat
-#         namespace: "gitlab-system"
-#       data:
-#         GITLAB_TOKEN: "{{ gitlabToken | b64encode }}"
-#   when: 
-#     - tokenID is not defined
-
-# - name: Import GitLab - Push GitLab Token
-#   community.okd.k8s:
-#     host: "{{ api_url }}"
-#     api_key: "{{ token }}"
-#     validate_certs: "{{ validate_certs }}"
-#     definition:
-#       apiVersion: external-secrets.io/v1alpha1
-#       kind: PushSecret
-#       metadata:
-#         name: "gitlab-group-token-secret-priming"
-#         namespace: gitlab-system
-#       spec:
-#         deletionPolicy: Delete
-#         refreshInterval: 10s
-#         secretStoreRefs:
-#           - name: eso-admin-secret-store
-#             kind: ClusterSecretStore
-#         selector:
-#           secret:
-#             name: "gitlab-group-access-pat"
-#         data:
-#           - match:
-#               secretKey: "GITLAB_TOKEN"
-#               remoteRef:
-#                 remoteKey: "gitlab"
-#                 property: "group_access_token"
+- name: Import GitLab - Push GitLab Token
+  community.okd.k8s:
+    host: "{{ api_url }}"
+    api_key: "{{ token }}"
+    validate_certs: "{{ validate_certs }}"
+    definition:
+      apiVersion: external-secrets.io/v1alpha1
+      kind: PushSecret
+      metadata:
+        name: "gitlab-group-token-secret-priming"
+        namespace: gitlab-system
+      spec:
+        deletionPolicy: Delete
+        refreshInterval: 10s
+        secretStoreRefs:
+          - name: eso-admin-secret-store
+            kind: ClusterSecretStore
+        selector:
+          secret:
+            name: "gitlab-group-access-pat"
+        data:
+          - match:
+              secretKey: "GITLAB_TOKEN"
+              remoteRef:
+                remoteKey: "gitlab"
+                property: "group_access_token"
