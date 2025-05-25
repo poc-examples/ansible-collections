@@ -81,7 +81,7 @@
     api_password: "{{ decoded_secret }}"
     group: "self-provisioned"
     name: "self-provisioned"
-    expires_at:  "{{ '+%Y-%m-%d' | strftime(ansible_facts.date_time.epoch | int + 60*60*24*90) }}"
+    expires_at:  "{{ '%Y-%m-%d' | strftime((ansible_date_time.epoch | int) + 60*60*24*120) }}"
     access_level: owner
     recreate: state_change
     scopes:
@@ -100,6 +100,21 @@
 - name: Access Token Response
   debug:
     msg: "{{ group_access_token }}"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -145,43 +160,3 @@
 #               remoteRef:
 #                 remoteKey: "gitlab"
 #                 property: "group_access_token"
-
-
-# GITLAB CREATES IS OWN CERT WHILE YOU COULD TECHNICALLY 
-# GENERATE YOUR OWN WILDCARD CERT UPDATE ARGOCD AND USE IT
-# FOR GITLAB... THIS SHOWS HOW TO FETCH ONE AND PATCH THE ARGOCD-TLS SETTINGS
-
-# OTHER OPTIONS MIGHT BE TO USE KYVERNO
-# - name: Get GitLab Wildcard TLS CA Secret
-#   community.kubernetes.k8s_info:
-#     host: "{{ api_url }}"
-#     api_key: "{{ token }}"
-#     validate_certs: "{{ validate_certs }}"
-#     api_version: v1
-#     kind: Secret
-#     name: "gitlab-wildcard-tls-ca"
-#     namespace: "gitlab-system"
-#   register: gitlab_tls_secret
-
-# - name: Decode cfssl_ca from the Secret
-#   set_fact:
-#     cfssl_ca: "{{ gitlab_tls_secret.resources[0].data.cfssl_ca | b64decode }}"
-
-# - name: Generate ConfigMap YAML from template
-#   template:
-#     src: configmap.j2
-#     dest: /tmp/configmap.yaml
-
-# - name: Apply ArgoCD TLS ConfigMap
-#   community.kubernetes.k8s:
-#     host: "{{ api_url }}"
-#     api_key: "{{ token }}"
-#     validate_certs: "{{ validate_certs }}"
-#     definition: "{{ lookup('file', '/tmp/configmap.yaml') }}"
-#     merge_type:
-#       - merge
-#   register: patch_result
-
-# - name: Debug Patch Result
-#   debug:
-#     msg: "ConfigMap patched successfully: {{ patch_result }}"
