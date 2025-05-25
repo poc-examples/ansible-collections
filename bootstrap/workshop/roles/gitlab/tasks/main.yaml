@@ -81,7 +81,7 @@
     api_password: "{{ decoded_secret }}"
     group: "self-provisioned"
     name: "self-provisioned"
-    expires_at:  "{{ lookup('pipe', 'date +%Y') }}-12-31"
+    expires_at:  "{{ '+%Y-%m-%d' | strftime(ansible_facts.date_time.epoch | int + 60*60*24*90) }}"
     access_level: owner
     recreate: state_change
     scopes:
@@ -101,83 +101,7 @@
   debug:
     msg: "{{ group_access_token }}"
 
-- name: GitLab - Fetch Access Token from GitLab for Group
-  uri:
-    url: "https://gitlab.{{ domain }}/api/v4/groups/{{ self_provisioned_group.group.id }}/access_tokens"
-    method: GET
-    validate_certs: no
-    status_code:
-        - 200
-        - 201
-        - 409
-        - 400
-    headers:
-        Content-Type: application/json
-        Authorization: Bearer {{ gitlab_token }}
-  register: tokens
-  until: tokens.status != 403
-  retries: 5
-  delay: 10
 
-- debug:
-    var: tokens
-
-# - name: GitLab - Set Access Token Variable
-#   set_fact:
-#     tokenID: "{{ tokens.json[0].id }}"
-#   when: 
-#     - tokens.json is defined
-#     - tokens.json | length > 0
-#     - tokens.json[0].id is defined
-
-# - name: GitLab - Create Group Access Token
-#   uri:
-#     url: "https://gitlab.{{ domain }}/api/v4/groups/{{ groupID }}/access_tokens"
-#     method: POST
-#     validate_certs: no
-#     body_format: json
-#     status_code:
-#         - 200
-#         - 201
-#         - 409
-#         - 400
-#     headers:
-#         Content-Type: application/json
-#         Authorization: Bearer {{ gitlab_token }}
-#     body: >
-#         {
-#           "scopes": [
-#             "api",
-#             "read_api",
-#             "create_runner",
-#             "k8s_proxy",
-#             "read_repository",
-#             "write_repository",
-#             "read_registry",
-#             "write_registry",
-#             "ai_features"
-#           ],
-#           "name": "self-provisioned",
-#           "access_level": 50,
-#           "expires_at": "{{ '+%Y-%m-%d' | strftime(ansible_facts.date_time.epoch | int + 60*60*24*90) }}"
-#         }
-#   register: result
-#   until: result.status != 403
-#   retries: 10
-#   delay: 20
-#   when: tokenID is not defined
-
-# - name: GitLab - Set Group Access Token Variable
-#   set_fact:
-#     gitlabToken: "{{ result.json.token }}"
-#   when: 
-#     - tokenID is not defined
-
-# - name: GitLab - Group Access Token
-#   debug:
-#     msg: "{{ gitlabToken }}"
-#   when: 
-#     - tokenID is not defined
 
 # - name: Import GitLab - Create Backstage Group Token Access Credentials
 #   community.okd.k8s:
