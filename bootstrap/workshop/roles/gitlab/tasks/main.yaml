@@ -143,3 +143,5 @@
               remoteRef:
                 remoteKey: "gitlab"
                 property: "group_access_token"
+  when: 
+    - group_access_token.access_token.token is defined
