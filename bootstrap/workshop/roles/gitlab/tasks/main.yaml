@@ -1,4 +1,9 @@
-- name: Verify GitLab Web Server is Running
+#########################################################
+## This action loops over the deployment status of
+## the gitlab webserver checking the status is healthy
+## before continuing
+#########################################################
+- name: Wait Until GitLab Web Server is Running
   block:
 
     - name: Waiting for Verification
@@ -20,7 +25,12 @@
       retries: 40
       delay: 30
 
-- name: Clone - Decode Admin Password
+
+#########################################################
+## To Authenticate the rest of the calls, we fetch the 
+## GitLab root user secret and base63decode it.
+#########################################################
+- name: Fetch GitLab Admin Password
   community.kubernetes.k8s_info:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
@@ -31,31 +41,17 @@
     namespace: "gitlab-system"
   register: gitlab_admin_secret
 
-- name: Decode the secret and register to a variable
+- name: Decode Admin Password
   set_fact:
     decoded_secret: "{{ gitlab_admin_secret.resources[0].data.password | b64decode }}"
 
-- name: Clone - Obtain Access Token
-  uri:
-    url: "https://gitlab.{{ domain }}/oauth/token"
-    method: POST
-    validate_certs: no
-    status_code: 200
-    body_format: json
-    headers:
-        Content-Type: application/json
-    body: >
-        {
-        "grant_type": "password",
-        "username": "root",
-        "password": "{{ decoded_secret }}"
-        }
-  register: gitlab_access_token
 
-- name: Decode the secret and register to a variable
-  set_fact:
-    gitlab_token: "{{ gitlab_access_token.json.access_token }}"
-
+#########################################################
+## Backstage requires an access token in order to provision
+## repositories.  We create a group called self-provisioned
+## and generate an access token for it.  If the script is run
+## again it will be regenerated and rotated through the system
+#########################################################
 - name: "Create GitLab Group"
   community.general.gitlab_group:
     api_url: https://gitlab.{{ domain }}
@@ -68,10 +64,6 @@
     auto_devops_enabled: false
     state: present
   register: self_provisioned_group
-
-- name: GIT LAB Groups
-  debug:
-    msg: "{{ self_provisioned_group }}"
 
 - name: "Creating a group access token"
   community.general.gitlab_group_access_token:
@@ -97,10 +89,11 @@
     state: present
   register: group_access_token
 
-- name: Access Token Response
-  debug:
-    msg: "{{ group_access_token }}"
 
+#########################################################
+## When the secret is either generated or recreated
+## the new secret is persisted to a secret
+#########################################################
 - name: GitLab - Create Backstage Group Token Access Credentials
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -117,6 +110,11 @@
   when: 
     - group_access_token.access_token.token is defined
 
+
+#########################################################
+## Create a PushSecret to pick up the group access token
+## and persist it to Vault
+#########################################################
 - name: Import GitLab - Push GitLab Token
   community.okd.k8s:
     host: "{{ api_url }}"
@@ -143,5 +141,3 @@
               remoteRef:
                 remoteKey: "gitlab"
                 property: "group_access_token"
-  when: 
-    - group_access_token.access_token.token is defined
