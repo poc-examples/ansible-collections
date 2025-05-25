@@ -105,7 +105,7 @@
     name: "self-provisioned"
     expires_at:  "{{ lookup('pipe', 'date +%Y') }}-12-31"
     access_level: owner
-    recreate: never
+    recreate: state_change
     scopes:
       - api
       - read_api
