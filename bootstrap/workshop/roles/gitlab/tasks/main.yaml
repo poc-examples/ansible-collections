@@ -103,7 +103,7 @@
     api_password: "{{ decoded_secret }}"
     group: "self-provisioned"
     name: "self-provisioned"
-    expires_at:  "{{ '%Y-%m-%d' | strftime((ansible_date_time.epoch | int) + 60*60*24*120) }}"
+    expires_at:  "{{ lookup('pipe', 'date +%Y') }}-12-31"
     access_level: owner
     recreate: never
     scopes:
