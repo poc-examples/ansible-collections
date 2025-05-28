@@ -121,6 +121,13 @@
                 -u {{ shared_cluster_data.providerCredentials.client_id }} \
                 -p {{ shared_cluster_data.providerCredentials.client_secret }}
 
+        - name: Fetch Credentials
+          ansible.builtin.command: >
+            az aro list-credentials \
+              --name {{ cluster.name }} \
+              --resource-group {{ cluster.providerCredentials.resource_group_name }}
+          register: aro_credential
+
         - debug:
             var: shared_cluster_data
 
