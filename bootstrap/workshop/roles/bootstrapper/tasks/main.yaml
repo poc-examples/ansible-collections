@@ -206,7 +206,6 @@
     ###################################################################################
     - name: Fetch ARO Credentials
       when:
-        - cluster_credentials is not defined
         - cluster.type == "aro"
       block:
 
