@@ -100,123 +100,146 @@
       ansible.builtin.set_fact:
         shared_cluster_api_url: "https://api.{{ shared_cluster_domain }}:6443"
 
-    - name: Connecting Shared Cluster - Can Take up to 7-15 Minutes
-      community.okd.openshift_auth:
-        host: "{{ shared_cluster_api_url }}"
-        username: "{{ credentials.admin.username }}"
-        password: "{{ credentials.admin.password }}"
-        verify_ssl: false
-      register: login
-      retries: 45
-      delay: 30
+    - name: Azure Get Shared Cluster Ingress
+      when:
+        - cluster.type == "aro"
+      block:
 
-    - name: Fetch Shared Cluster Ingress
-      community.kubernetes.k8s_info:
-        host: "{{ shared_cluster_api_url }}"
-        api_key: "{{ login.openshift_auth.api_key }}"
-        validate_certs: "{{ validate_certs }}"
-        api_version: config.openshift.io/v1
-        kind: Ingress
-        name: cluster
-      register: ingress_info
+        - name: Locate Configured Shared Cluster
+          ansible.builtin.set_fact:
+            shared_cluster_data: "{{ 
+                clusters 
+                | selectattr('workshop.chart.settings.stage', 'equalto', 'shared') 
+                | list | first 
+              }}"
 
-    - name: Map Shared Cluster Ingress
-      ansible.builtin.set_fact:
-        shared_cluster:
-          domain: "{{ shared_cluster_domain }}"
-          ingress_domain: "{{ ingress_info.resources[0].spec.domain | regex_replace('^apps\\.', '') }}"
+        - debug:
+            var: shared_cluster_data
 
-    - debug:
-        msg: "{{ shared_cluster }}"
 
-- name: Set Default Cluster Parameters
-  ansible.builtin.set_fact:
-    cluster_api_url: "https://api.{{ openshift_domain }}:6443"
-    gitops:
-      enabled: "{{ cluster.workshop.gitops.enabled | default(true) }}"
-      channel: gitops-1.14
-      namespace: openshift-gitops
 
-- name: Connecting to OpenShift - Can Take up to 7-15 Minutes
-  community.okd.openshift_auth:
-    host: "{{ cluster_api_url }}"
-    username: "{{ cluster_credentials.username }}"
-    password: "{{ cluster_credentials.password }}"
-    verify_ssl: false
-  register: login
-  retries: 45
-  delay: 30
+#     - name: Non-Azure Get Shared Cluster Ingress
+#       when:
+#         - cluster.type != "aro"
+#       block:
 
-- name: Waiting for OpenShift Healthy State - Can Take up to 12-15 Minutes
-  community.kubernetes.k8s_info:
-    host: "{{ cluster_api_url }}"
-    api_key: "{{ login.openshift_auth.api_key }}"
-    validate_certs: "{{ validate_certs }}"
-    api_version: v1
-    kind: Pod
-  register: pod_info
-  until:
-    - pod_info.resources is defined
-    - pod_info.resources | length > 0
-    - pod_info.resources | selectattr('status.phase', 'equalto', 'Pending') | length == 0
-  retries: 40
-  delay: 30
+#         - name: Connecting Shared Cluster - Can Take up to 7-15 Minutes
+#           community.okd.openshift_auth:
+#             host: "{{ shared_cluster_api_url }}"
+#             username: "{{ credentials.admin.username }}"
+#             password: "{{ credentials.admin.password }}"
+#             verify_ssl: false
+#           register: login
+#           retries: 45
+#           delay: 30
 
-- name: Fetch Cluster Ingress
-  community.kubernetes.k8s_info:
-    host: "{{ cluster_api_url }}"
-    api_key: "{{ login.openshift_auth.api_key }}"
-    validate_certs: "{{ validate_certs }}"
-    api_version: config.openshift.io/v1
-    kind: Ingress
-    name: cluster
-  register: ingress_info
+#         - name: Fetch Shared Cluster Ingress
+#           community.kubernetes.k8s_info:
+#             host: "{{ shared_cluster_api_url }}"
+#             api_key: "{{ login.openshift_auth.api_key }}"
+#             validate_certs: "{{ validate_certs }}"
+#             api_version: config.openshift.io/v1
+#             kind: Ingress
+#             name: cluster
+#           register: ingress_info
 
-- name: Get Domain from Cluster Ingress
-  set_fact:
-    ingress_domain: "{{ ingress_info.resources[0].spec.domain | regex_replace('^apps\\.', '') }}"
+#         - name: Map Shared Cluster Ingress
+#           ansible.builtin.set_fact:
+#             shared_cluster:
+#               domain: "{{ shared_cluster_domain }}"
+#               ingress_domain: "{{ ingress_info.resources[0].spec.domain | regex_replace('^apps\\.', '') }}"
 
-- name: Install OpenShift-GitOps Operator
-  vars:
-    api_url: "{{ cluster_api_url }}"
-    token: "{{ login.openshift_auth.api_key }}"
-  ansible.builtin.include_role:
-    name: gitops-operator
-  when:
-    - gitops.enabled is true
+#         - debug:
+#             msg: "{{ shared_cluster }}"
 
-- name: Configure OpenShift-GitOps Instance
-  vars:
-    domain: "{{ ingress_domain }}"
-    api_url: "{{ cluster_api_url }}"
-    token: "{{ login.openshift_auth.api_key }}"
-    workshop: "{{ cluster.workshop }}"
-  ansible.builtin.include_role:
-    name: gitops-instance
-  when:
-    - gitops.enabled is true
+# - name: Set Default Cluster Parameters
+#   ansible.builtin.set_fact:
+#     cluster_api_url: "https://api.{{ openshift_domain }}:6443"
+#     gitops:
+#       enabled: "{{ cluster.workshop.gitops.enabled | default(true) }}"
+#       channel: gitops-1.14
+#       namespace: openshift-gitops
 
-- name: Secrets Management
-  vars:
-    api_url: "{{ cluster_api_url }}"
-    token: "{{ login.openshift_auth.api_key }}"
-    secrets: "{{ cluster.secrets }}"
-    rosa_token: "{{ cluster.providerCredentials.rosa_token }}"
-    aro_credentials:
-      CLIENT_ID: "{{ cluster.providerCredentials.client_id }}"
-      CLIENT_SECRET: "{{ cluster.providerCredentials.client_secret }}"
-      SUBSCRIPTION_ID: "{{ cluster.providerCredentials.subscription_id }}"
-      TENANT_ID: "{{ cluster.providerCredentials.tenant_id }}"
-      RESOURCE_GROUP_NAME: "{{ cluster.providerCredentials.resource_group_name }}"
-      LOCATION: "{{ cluster.providerCredentials.location }}"
-    aws_credentials:
-      AWS_ACCESS_KEY_ID: "{{ cluster.providerCredentials.aws_access_key_id }}"
-      AWS_SECRET_ACCESS_KEY: "{{ cluster.providerCredentials.aws_secret_access_key }}"
-    keycloak_users: "{{ credentials.users }}"
-  ansible.builtin.import_role:
-    name: secrets-manager
+# - name: Connecting to OpenShift - Can Take up to 7-15 Minutes
+#   community.okd.openshift_auth:
+#     host: "{{ cluster_api_url }}"
+#     username: "{{ cluster_credentials.username }}"
+#     password: "{{ cluster_credentials.password }}"
+#     verify_ssl: false
+#   register: login
+#   retries: 45
+#   delay: 30
 
-- name: Links 
-  debug:
-    msg: |
-      console url: https://console-openshift-console.apps.{{ ingress_domain }}
+# - name: Waiting for OpenShift Healthy State - Can Take up to 12-15 Minutes
+#   community.kubernetes.k8s_info:
+#     host: "{{ cluster_api_url }}"
+#     api_key: "{{ login.openshift_auth.api_key }}"
+#     validate_certs: "{{ validate_certs }}"
+#     api_version: v1
+#     kind: Pod
+#   register: pod_info
+#   until:
+#     - pod_info.resources is defined
+#     - pod_info.resources | length > 0
+#     - pod_info.resources | selectattr('status.phase', 'equalto', 'Pending') | length == 0
+#   retries: 40
+#   delay: 30
+
+# - name: Fetch Cluster Ingress
+#   community.kubernetes.k8s_info:
+#     host: "{{ cluster_api_url }}"
+#     api_key: "{{ login.openshift_auth.api_key }}"
+#     validate_certs: "{{ validate_certs }}"
+#     api_version: config.openshift.io/v1
+#     kind: Ingress
+#     name: cluster
+#   register: ingress_info
+
+# - name: Get Domain from Cluster Ingress
+#   set_fact:
+#     ingress_domain: "{{ ingress_info.resources[0].spec.domain | regex_replace('^apps\\.', '') }}"
+
+# - name: Install OpenShift-GitOps Operator
+#   vars:
+#     api_url: "{{ cluster_api_url }}"
+#     token: "{{ login.openshift_auth.api_key }}"
+#   ansible.builtin.include_role:
+#     name: gitops-operator
+#   when:
+#     - gitops.enabled is true
+
+# - name: Configure OpenShift-GitOps Instance
+#   vars:
+#     domain: "{{ ingress_domain }}"
+#     api_url: "{{ cluster_api_url }}"
+#     token: "{{ login.openshift_auth.api_key }}"
+#     workshop: "{{ cluster.workshop }}"
+#   ansible.builtin.include_role:
+#     name: gitops-instance
+#   when:
+#     - gitops.enabled is true
+
+# - name: Secrets Management
+#   vars:
+#     api_url: "{{ cluster_api_url }}"
+#     token: "{{ login.openshift_auth.api_key }}"
+#     secrets: "{{ cluster.secrets }}"
+#     rosa_token: "{{ cluster.providerCredentials.rosa_token }}"
+#     aro_credentials:
+#       CLIENT_ID: "{{ cluster.providerCredentials.client_id }}"
+#       CLIENT_SECRET: "{{ cluster.providerCredentials.client_secret }}"
+#       SUBSCRIPTION_ID: "{{ cluster.providerCredentials.subscription_id }}"
+#       TENANT_ID: "{{ cluster.providerCredentials.tenant_id }}"
+#       RESOURCE_GROUP_NAME: "{{ cluster.providerCredentials.resource_group_name }}"
+#       LOCATION: "{{ cluster.providerCredentials.location }}"
+#     aws_credentials:
+#       AWS_ACCESS_KEY_ID: "{{ cluster.providerCredentials.aws_access_key_id }}"
+#       AWS_SECRET_ACCESS_KEY: "{{ cluster.providerCredentials.aws_secret_access_key }}"
+#     keycloak_users: "{{ credentials.users }}"
+#   ansible.builtin.import_role:
+#     name: secrets-manager
+
+# - name: Links 
+#   debug:
+#     msg: |
+#       console url: https://console-openshift-console.apps.{{ ingress_domain }}
