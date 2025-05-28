@@ -113,6 +113,14 @@
                 | list | first 
               }}"
 
+        - name: Azure Login
+          ansible.builtin.command: >
+            az login \
+              --tenant {{ shared_cluster_data.providerCredentials.tenant_id }} \
+              --service-principal \
+                -u {{ shared_cluster_data.providerCredentials.client_id }} \
+                -p {{ shared_cluster_data.providerCredentials.client_secret }}
+
         - debug:
             var: shared_cluster_data
 
