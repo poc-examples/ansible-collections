@@ -108,7 +108,7 @@
         - name: Locate Configured Shared Cluster
           ansible.builtin.set_fact:
             shared_cluster_data: "{{ 
-                clusters 
+                openshift.clusters 
                 | selectattr('workshop.chart.settings.stage', 'equalto', 'shared') 
                 | list | first 
               }}"
