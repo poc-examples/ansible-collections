@@ -124,8 +124,8 @@
         - name: Fetch Credentials
           ansible.builtin.command: >
             az aro list-credentials \
-              --name {{ cluster.name }} \
-              --resource-group {{ cluster.providerCredentials.resource_group_name }}
+              --name {{ shared_cluster_data.name }} \
+              --resource-group {{ shared_cluster_data.providerCredentials.resource_group_name }}
           register: aro_credential
 
         - debug:
