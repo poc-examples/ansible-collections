@@ -16,8 +16,165 @@
       ansible.builtin.set_fact:
         terraform_outputs: "{{ tf_outputs.stdout | from_json }}"
 
+#####################################################################
+## Clusters like ROSA & HCP will allow you to configure credentials 
+## directly, while if the cluster is OCP your providing kubeadmin from
+## hyperconsole.  This sets the global level, further in the script if
+## the credentials are per cluster and not global those get set in the
+## cluster config and will override these.
+#####################################################################
+- name: Set Global Credentials
+  when:
+    - openshift.credentials.admin is defined
+  ansible.builtin.set_fact:
+    cluster_credentials:
+      username: "{{ credentials.admin.username }}"
+      password: "{{ credentials.admin.password }}"
 
-## GET LOGIN CREDENTIALS
+######################################################################
+######################################################################
+## Set the defaults for the rest of the run & Gather Shared Cluster
+## Information
+######################################################################
+######################################################################
+- name: Set OpenShift Defaults
+  ansible.builtin.set_fact:
+    validate_certs: "{{ cluster.validate_certs | default(false) }}"
+    openshift_domain: "{{ 
+        cluster['domain'] 
+          | default(terraform_outputs[cluster.name + '_domain']['value'], true) 
+      }}"
+    shared_cluster_enabled: "{{ cluster.workshop.sharedClusterRef is defined | bool }}"
+    shared_cluster:
+      enabled: ""
+      domain: ""
+      ingress_domain: ""
+
+- name: Gather Shared Cluster Information
+  when: 
+    - shared_cluster_enabled == true
+  block: 
+
+    - name: Locate Configured Shared Cluster
+      ansible.builtin.set_fact:
+        shared_cluster_data: "{{ 
+            openshift.clusters 
+              | selectattr('workshop.chart.settings.stage', 'equalto', 'shared') 
+              | list | first 
+          }}"
+
+    - name: Map Shared Cluster Domain
+      ansible.builtin.set_fact:
+        shared_cluster_domain: "{{ 
+            shared_cluster_data['domain'] 
+              | default(terraform_outputs[cluster.workshop.sharedClusterRef + '_domain']['value'], true) }}"
+
+    - name: Map Shared Cluster API URL
+      ansible.builtin.set_fact:
+        shared_cluster_api_url: "https://api.{{ shared_cluster_domain }}:6443"
+
+    - name: Azure Get Shared Cluster Ingress
+      when:
+        - shared_cluster_data.type == "aro"
+      block:
+
+        - name: Azure Login
+          ansible.builtin.command: >
+            az login \
+              --tenant {{ shared_cluster_data.providerCredentials.tenant_id }} \
+              --service-principal \
+                -u {{ shared_cluster_data.providerCredentials.client_id }} \
+                -p {{ shared_cluster_data.providerCredentials.client_secret }}
+
+        - name: Fetch Credentials
+          ansible.builtin.command: >
+            az aro list-credentials \
+              --name {{ shared_cluster_data.name }} \
+              --resource-group {{ shared_cluster_data.providerCredentials.resource_group_name }}
+          register: aro_credential
+
+        - name: Set ARO Credentials
+          ansible.builtin.set_fact:
+            cluster_credentials:
+              username: "{{ (aro_credential.stdout | from_json).kubeadminUsername }}"
+              password: "{{ (aro_credential.stdout | from_json).kubeadminPassword }}"
+
+        - name: Connecting Shared Cluster - Can Take up to 7-15 Minutes
+          community.okd.openshift_auth:
+            host: "{{ shared_cluster_api_url }}"
+            username: "{{ cluster_credentials.username }}"
+            password: "{{ cluster_credentials.password }}"
+            verify_ssl: false
+          register: login
+          retries: 45
+          delay: 30
+
+        - name: Fetch Shared Cluster Ingress
+          community.kubernetes.k8s_info:
+            host: "{{ shared_cluster_api_url }}"
+            api_key: "{{ login.openshift_auth.api_key }}"
+            validate_certs: "{{ validate_certs }}"
+            api_version: config.openshift.io/v1
+            kind: Ingress
+            name: cluster
+          register: ingress_info
+
+        - name: Map Shared Cluster Ingress
+          ansible.builtin.set_fact:
+            shared_cluster:
+              domain: "{{ shared_cluster_domain }}"
+              ingress_domain: "{{ 
+                  ingress_info.resources[0].spec.domain 
+                    | regex_replace('^apps\\.', '') 
+                }}"
+
+    - name: Non-Azure Get Shared Cluster Ingress
+      when:
+        - cluster.type != "aro"
+      block:
+
+        - name: Override Credentials for Shared Cluster
+          when:
+            - shared_cluster_data.credentials is defined
+            - shared_cluster_data.credentials.admin is defined
+          ansible.builtin.set_fact:
+            cluster_credentials:
+              username: "{{ shared_cluster_data.credentials.admin.username }}"
+              password: "{{ shared_cluster_data.credentials.admin.password }}"
+
+        - name: Connecting Shared Cluster - Can Take up to 7-15 Minutes
+          community.okd.openshift_auth:
+            host: "{{ shared_cluster_api_url }}"
+            username: "{{ cluster_credentials.username }}"
+            password: "{{ cluster_credentials.password }}"
+            verify_ssl: false
+          register: login
+          retries: 45
+          delay: 30
+
+        - name: Fetch Shared Cluster Ingress
+          community.kubernetes.k8s_info:
+            host: "{{ shared_cluster_api_url }}"
+            api_key: "{{ login.openshift_auth.api_key }}"
+            validate_certs: "{{ validate_certs }}"
+            api_version: config.openshift.io/v1
+            kind: Ingress
+            name: cluster
+          register: ingress_info
+
+        - name: Map Shared Cluster Ingress
+          ansible.builtin.set_fact:
+            shared_cluster:
+              domain: "{{ shared_cluster_domain }}"
+              ingress_domain: "{{ 
+                  ingress_info.resources[0].spec.domain 
+                    | regex_replace('^apps\\.', '') 
+                }}"
+
+###########################################################################
+## The rest of this script is scoped to the cluster being configured,
+## if the cluster is in a shared setup it will use the information gathered
+###########################################################################
 - name: Parse Login Credentials
   block:
 
@@ -30,7 +187,7 @@
           username: "{{ credentials.admin.username }}"
           password: "{{ credentials.admin.password }}"
 
-    ## OVERRIDE WITH DECLARED CREDENTIALS
+    ## OVERRIDE Global WITH DECLARED CREDENTIALS
     - name: Override Credentials
       when:
         - cluster.credentials is defined
@@ -87,7 +244,7 @@
       domain: ""
       ingress_domain: ""
 
-- name: Query Shared Cluster
+- name: Gather Shared Cluster Information
   when: 
     - shared_cluster_enabled == true
   block: 
