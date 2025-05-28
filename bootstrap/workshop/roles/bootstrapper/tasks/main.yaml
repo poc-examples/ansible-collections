@@ -243,6 +243,9 @@
       namespace: openshift-gitops
 
 - debug:
+    var: cluster_api_url
+
+- debug:
     var: cluster_credentials
 
 - name: Connecting to OpenShift - Can Take up to 7-15 Minutes
