@@ -52,7 +52,7 @@
 ## and generate an access token for it.  If the script is run
 ## again it will be regenerated and rotated through the system
 #########################################################
-- name: "Create GitLab Group"
+- name: "Create GitLab Workshop Group"
   community.general.gitlab_group:
     api_url: https://gitlab.{{ domain }}
     validate_certs: false
@@ -65,7 +65,7 @@
     state: present
   register: self_provisioned_group
 
-- name: "Creating a group access token"
+- name: "Creating self-provisioned group access token"
   community.general.gitlab_group_access_token:
     api_url: https://gitlab.{{ domain }}
     validate_certs: false
@@ -89,6 +89,24 @@
     state: present
   register: group_access_token
 
+##########################################################
+## Developers also need a group in order to set restricted
+## permissions blocking merging to main and direct commits
+## This also provides an Access Token for DevSpaces
+##########################################################
+- name: "Create GitLab Developers Group"
+  community.general.gitlab_group:
+    api_url: https://gitlab.{{ domain }}
+    validate_certs: false
+    api_username: root
+    api_password: "{{ decoded_secret }}"
+    name: developers
+    path: developers
+    visibility: "internal"
+    auto_devops_enabled: false
+    project_creation_level: "developer"
+    state: present
+  register: developers_group
 
 #########################################################
 ## When the secret is either generated or recreated
@@ -110,12 +128,11 @@
   when: 
     - group_access_token.access_token.token is defined
 
-
 #########################################################
 ## Create a PushSecret to pick up the group access token
 ## and persist it to Vault
 #########################################################
-- name: Import GitLab - Push GitLab Token
+- name: Import GitLab - Push Admin Token
   community.okd.k8s:
     host: "{{ api_url }}"
     api_key: "{{ token }}"
