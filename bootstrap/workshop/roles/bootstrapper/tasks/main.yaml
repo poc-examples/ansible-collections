@@ -131,6 +131,7 @@
                   ingress_info.resources[0].spec.domain 
                     | regex_replace('^apps\\.', '') 
                 }}"
+              api_port: "{{ shared_cluster_data.port | default('6443', true) }}"
 
     - name: Non-Azure Get Shared Cluster Ingress
       when:
@@ -174,6 +175,7 @@
                   ingress_info.resources[0].spec.domain 
                     | regex_replace('^apps\\.', '') 
                 }}"
+              api_port: "{{ shared_cluster_data.port | default('6443', true) }}"
 
 ###########################################################################
 ## The rest of this script is scoped to the cluster being configured,
