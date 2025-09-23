@@ -242,7 +242,7 @@
       shared:
         enabled: {{ shared_cluster_enabled | string }}
         domain: {{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.ingress_domain, 'none') }}
-        api_port: {{ shared_cluster_enabled | bool | ternary('apps.' ~ shared_cluster.api_port, 'none') }}
+        api_port: {{ shared_cluster_enabled | bool | ternary(shared_cluster.api_port, 'none') }}
       cloud:
         region: {{ cluster.providerCredentials.region | default('not_available')}}
         location: {{ cluster.providerCredentials.location | default('not_available')}}
