@@ -1,3 +1,7 @@
+- name: Set Overrides
+  set_fact:
+    api_port: "{{ cluster.port | default('6443', true) }}"
+
 - name: Fetch Terraform State when Exists
   when:
     - cluster.type is defined
@@ -71,7 +75,7 @@
 
     - name: Map Shared Cluster API URL
       ansible.builtin.set_fact:
-        shared_cluster_api_url: "https://api.{{ shared_cluster_domain }}:6443"
+        shared_cluster_api_url: "https://api.{{ shared_cluster_domain }}:{{ api_port }}"
 
     - name: Azure Get Shared Cluster Ingress
       when:
@@ -235,7 +239,7 @@
 
 - name: Set Default Cluster Parameters
   ansible.builtin.set_fact:
-    cluster_api_url: "https://api.{{ openshift_domain }}:6443"
+    cluster_api_url: "https://api.{{ openshift_domain }}:{{ api_port }}"
     gitops:
       enabled: "{{ cluster.workshop.gitops.enabled | default(true) }}"
       channel: gitops-1.14
